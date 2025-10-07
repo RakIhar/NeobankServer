@@ -1,4 +1,4 @@
-#include "databasemanager.h"
+#include "dbmanager.h"
 
 DataBaseManager::DataBaseManager(QObject *parent)
     : QObject{parent}

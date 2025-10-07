@@ -1,5 +1,5 @@
-#ifndef DATABASEMANAGER_H
-#define DATABASEMANAGER_H
+#ifndef DBMANAGER_H
+#define DBMANAGER_H
 
 #include <QObject>
 
@@ -12,4 +12,4 @@ public:
 signals:
 };
 
-#endif // DATABASEMANAGER_H
+#endif // DBMANAGER_H
