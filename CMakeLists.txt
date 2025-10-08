@@ -16,6 +16,8 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
@@ -23,7 +25,7 @@ set(SOURCES
   src/network/protocols/bankingprotocol.h src/network/protocols/bankingprotocol.cpp
   src/network/protocols/messageparser.h src/network/protocols/messageparser.cpp
   src/core/applicationserver.h src/core/applicationserver.cpp
-  src/core/servermanager.h src/core/servermanager.cpp
+
   src/network/sessions/sessionmanager.h src/network/sessions/sessionmanager.cpp
   src/network/sessions/clientsession.h src/network/sessions/clientsession.cpp
   src/network/ssl/sslmanager.h src/network/ssl/sslmanager.cpp
@@ -53,6 +55,8 @@ add_executable(NeobankServer
   src/database/models/user.h src/database/models/user.cpp
   src/database/repositories/accountrepository.h src/database/repositories/accountrepository.cpp
   src/database/repositories/transactionrepository.h src/database/repositories/transactionrepository.cpp
+  src/network/core/tcpserver.h src/network/core/tcpserver.cpp
+
 
 
 )
@@ -60,6 +64,8 @@ add_executable(NeobankServer
 #include_directories("" "" "") - для поиска хедеров
 
 target_link_libraries(NeobankServer PRIVATE Qt6::Core Qt::Network Qt6::Sql PostgreSQL::PostgreSQL)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)

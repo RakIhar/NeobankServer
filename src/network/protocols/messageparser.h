@@ -3,6 +3,7 @@
 
 #include <QObject>
 //логика парсинга, валидация, преобразование данных
+//без слотов и сигналов
 class MessageParser : public QObject
 {
     Q_OBJECT

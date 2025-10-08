@@ -2,7 +2,9 @@
 #define CLIENTSESSION_H
 
 #include <QObject>
-//представление одной сессии
+//slots:
+//processData
+//onSocket
 class ClientSession : public QObject
 {
     Q_OBJECT
