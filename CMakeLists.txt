@@ -55,10 +55,6 @@ add_executable(NeobankServer
   src/database/models/user.h src/database/models/user.cpp
   src/database/repositories/accountrepository.h src/database/repositories/accountrepository.cpp
   src/database/repositories/transactionrepository.h src/database/repositories/transactionrepository.cpp
-  src/network/core/tcpserver.h src/network/core/tcpserver.cpp
-
-
-
 )
 #add_library
 #include_directories("" "" "") - для поиска хедеров
