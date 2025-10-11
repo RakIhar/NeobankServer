@@ -2,11 +2,15 @@
 #include "QTcpServer"
 #include <QDebug>
 
-ApplicationServer::ApplicationServer(QObject *parent) : QObject(parent){};
+ApplicationServer::ApplicationServer(QObject *parent) : QObject(parent){}
+
+ApplicationServer::~ApplicationServer()
+{
+
+};
 
 bool ApplicationServer::initializeComponents()
 {
-    m_tcpServer = new TcpServer(this);
     m_authManager = new AuthManager(this);
     m_dbManager = new DataBaseManager(this);
     m_sessionManager = new SessionManager(this);

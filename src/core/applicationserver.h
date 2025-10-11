@@ -8,7 +8,6 @@
 #include "../database/dbmanager.h"
 #include "../security/authentification/authmanager.h"
 #include "../network/ssl/sslmanager.h"
-#include "../network/core/tcpserver.h"
 #include <QCoreApplication>
 #include <QTcpServer>
 
@@ -25,7 +24,6 @@ public:
 private:
     bool initializeComponents();
 
-    TcpServer* m_tcpServer;
     SessionManager* m_sessionManager;
     DataBaseManager* m_dbManager;
     AuthManager* m_authManager;

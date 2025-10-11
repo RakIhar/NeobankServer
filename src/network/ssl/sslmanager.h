@@ -5,8 +5,6 @@
 #include <QSslServer> //обертка над QTcpServer
 #include <QSsl> //набор SSL констант
 
-
-
 //управление SSL/TLS соединениями
 
 //QSslServer
