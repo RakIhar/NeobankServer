@@ -5,6 +5,8 @@
 #include "clientsession.h"
 #include <QPointer>
 #include <QSet>
+#include <QTcpSocket>
+#include <QSslSocket>
 
 //хранит все сессии
 //создает и удаляет сессии
@@ -14,6 +16,7 @@ class SessionManager : public QObject
     Q_OBJECT
 public:
     explicit SessionManager(QObject *parent = nullptr);
+    void createSession(QSslSocket* socket);
 private:
     QSet<QPointer<ClientSession>> m_sessions;
 signals:

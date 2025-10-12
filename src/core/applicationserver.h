@@ -27,7 +27,7 @@ private:
     SessionManager* m_sessionManager;
     DataBaseManager* m_dbManager;
     AuthManager* m_authManager;
-    SSLManager* m_sslManager;
+    SslManager* m_sslManager;
 
     bool m_isRunning = false;
 };

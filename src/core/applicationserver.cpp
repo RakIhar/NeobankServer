@@ -14,7 +14,7 @@ bool ApplicationServer::initializeComponents()
     m_authManager = new AuthManager(this);
     m_dbManager = new DataBaseManager(this);
     m_sessionManager = new SessionManager(this);
-    m_sslManager = new SSLManager(this);
+    m_sslManager = new SslManager(this, m_sessionManager);
     //m_logger = new SystemLogger(this);
     return true;
 }

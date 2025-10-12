@@ -7,87 +7,125 @@
 #include <QList>
 #include <QSslCipher>
 
+//полное управление SSL/TLS соединениями
 
-//управление SSL/TLS соединениями
-
-//QSslServer
-// setSslConfiguration(const QSslConfiguration &cfg)                    Устанавливает параметры SSL (сертификат, ключ, шифры, CA и т.д.)
-// sslConfiguration() const                                             Получить текущую конфигурацию
-// setHandshakeTimeout(int ms)                                          Установить таймаут SSL-рукопожатия
-// handshakeTimeout() const                                             Получить текущее значение таймаута
-// Сигнал sslErrors(QSslSocket*, const QList<QSslError>&)               Ошибки сертификата клиента
-// Сигнал peerVerifyError(QSslSocket*, const QSslError&)                Ошибка верификации клиента
-// Сигнал startedEncryptionHandshake(QSslSocket*)                       Начало рукопожатия
-// Сигнал handshakeInterruptedOnError(QSslSocket*, const QSslError&)	Ошибка в процессе установки канала
-// Сигнал alertReceived / alertSent                                     Отладочная информация по TLS-алертам
-// Сигнал errorOccurred                                                 Любая ошибка сокета
-// Сигнал preSharedKeyAuthenticationRequired                            Для TLS-PSK (предварительно разделённый ключ)
-
-//QTcpServer
-// bool listen(const QHostAddress &address, quint16 port)               Запускает сервер на IP/порту. Возвращает false, если порт занят.
-// void close()                                                         Закрывает сервер.
-// bool isListening()                                                   Проверка, запущен ли сервер.
-// QHostAddress serverAddress() / quint16 serverPort()                  Получить адрес и порт, на которых слушает сервер.
-// QTcpSocket* nextPendingConnection()                                  Возвращает сокет для следующего ожидающего подключения.
-// void pauseAccepting() / void resumeAccepting() (Qt 6+)               Приостановка / возобновление приёма новых соединений.
-// Сигнал newConnection()                                               Вызывается, когда поступает новое подключение.
-// Сигнал acceptError(QAbstractSocket::SocketError)                     Ошибка при приёме подключения.
-
-//принять соединение и создать сессию в слоте
-//удалить чета
-
-
-//TLS_AES_256_GCM_SHA384
-SSLManager::SSLManager(QObject *parent)
-    : QObject(parent)
+void printConfig(QSslConfiguration sslConfig)
 {
-    // --- Загрузка сертификата ---
-    QFile certFile("../../certificates/server.crt");
-    QFile keyFile("../../certificates/server.key");
-    if (!certFile.open(QIODevice::ReadOnly) || !keyFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Не удалось открыть сертификат или ключ";
-        return;
-    }
+    qDebug() << "protocol:\n"
+             << sslConfig.protocol();
+    qDebug() << "localCertificate:\n"
+             << sslConfig.localCertificate();
+    qDebug() << "localCertificateChain:\n"
+             << sslConfig.localCertificateChain();
+    qDebug() << "privateKey:\n"
+             << sslConfig.privateKey();
+    qDebug() << "peerVerifyMode:\n"
+             << sslConfig.peerVerifyMode();
+    qDebug() << "peerVerifyDepth:\n"
+             << sslConfig.peerVerifyDepth();
+    qDebug() << "ciphers:\n"
+             << sslConfig.ciphers();
+    qDebug() << "supportedCiphers:\n"
+             << sslConfig.supportedCiphers();
+}
 
-    QSslCertificate cert(&certFile, QSsl::Pem);
-    QSslKey key(&keyFile, QSsl::Rsa, QSsl::Pem);
+SslManager::SslManager(QObject *parent, SessionManager *sessionManager)
+    : QObject(parent), m_sessionManager(sessionManager)
+{
+    initializeConfig();
+    initializeServerSlots();
 
-    // --- Базовая конфигурация ---
-    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
-    sslConfig.setLocalCertificate(cert);
-    sslConfig.setPrivateKey(key);
-
-    // --- Протокол: только TLS 1.3 ---
-    sslConfig.setProtocol(QSsl::TlsV1_3);
-
-    // --- Шифронаборы TLS 1.3 ---
-    QList<QSslCipher> ciphers;
-    for (const auto &cipher : QSslConfiguration::supportedCiphers()) {
-        if (cipher.name().startsWith("TLS_AES") ||
-            cipher.name().startsWith("TLS_CHACHA20")) {
-            ciphers.append(cipher);
-        }
-    }
-    sslConfig.setCiphers(ciphers);
-
-    // --- (опционально) проверка клиентов ---
-    // sslConfig.setPeerVerifyMode(QSslSocket::VerifyPeer);
-
-    // --- Применение конфигурации ---
-    m_sslServer = new QSslServer(this);
-    m_sslServer->setSslConfiguration(sslConfig);
-
-    connect(m_sslServer, &QSslServer::newConnection,
-            this, &SSLManager::onNewConnection);
-
-    if (!m_sslServer->listen(QHostAddress::Any, 4433)) {
+    if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //настроить сами порты и прочее
         qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
     } else {
         qInfo() << "TLS 1.3 сервер слушает на порту 4433";
     }
 }
 
-void SSLManager::onNewConnection()
+void SslManager::initializeConfig()
 {
+    QFile certFile("../../certificates/server.crt");
+    QFile keyFile("../../certificates/server.key");
 
+    if (!certFile.open(QIODevice::ReadOnly) || !keyFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Не удалось открыть сертификат или ключ"; //лучше исключение
+        return;
+    }
+
+    QSslCertificate cert(&certFile, QSsl::Pem); //X.509
+    QSslKey key(&keyFile, QSsl::Rsa, QSsl::Pem);
+    QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+    sslConfig.setLocalCertificate(cert);
+    sslConfig.setPrivateKey(key);
+
+    sslConfig.setProtocol(QSsl::SslProtocol::TlsV1_3);
+    sslConfig.setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyPeer);
+    QList<QSslCipher> ciphers {
+                              QSslCipher("TLS_AES_256_GCM_SHA384"),
+                              // QSslCipher("TLS_AES_128_GCM_SHA256"),
+                              QSslCipher("TLS_CHACHA20_POLY1305_SHA256")};
+
+    sslConfig.setCiphers(ciphers);
+
+    m_sslServer = new QSslServer(this);
+    m_sslServer->setSslConfiguration(sslConfig);
+}
+
+void SslManager::initializeServerSlots()
+{
+    connect(m_sslServer, &QSslServer::newConnection, this, &SslManager::onNewConnection);
+    connect(m_sslServer, &QSslServer::acceptError, this, &SslManager::onAcceptError);
+}
+
+void SslManager::initializeSocketSlots(QSslSocket *sslSocket)
+{
+    connect(sslSocket, &QSslSocket::encrypted,
+            this, &SslManager::onEncryptedReady, Qt::UniqueConnection);
+    connect(sslSocket, &QSslSocket::sslErrors,
+            this, &SslManager::onSslErrors, Qt::UniqueConnection);
+    connect(sslSocket, &QSslSocket::errorOccurred,
+            this, &SslManager::onSocketError, Qt::UniqueConnection);
+    connect(sslSocket, &QSslSocket::handshakeInterruptedOnError,
+            this, [](const QSslError &e){ qWarning() << "Handshake interrupted:" << e.errorString(); });
+    connect(sslSocket, &QSslSocket::disconnected, this, [this, sslSocket]() {
+        m_activeSockets.remove(sslSocket);
+        sslSocket->deleteLater();
+    });
+}
+
+void SslManager::onNewConnection()
+{
+    QTcpSocket *base = m_sslServer->nextPendingConnection();
+    QSslSocket *ssl = qobject_cast<QSslSocket*>(base);
+    if (!ssl)
+        return;
+    m_activeSockets.insert(ssl);
+    initializeSocketSlots(ssl);
+}
+
+void SslManager::onEncryptedReady()
+{
+    QSslSocket *ssl = qobject_cast<QSslSocket*>(sender());
+    if (!ssl)
+        return;
+
+    m_sessionManager->createSession(ssl);
+}
+
+void SslManager::onAcceptError(QAbstractSocket::SocketError error)
+{
+    //
+}
+
+void SslManager::onSslErrors(const QList<QSslError> &errors)
+{
+    for (const auto &e : errors)
+        qWarning() << "SSL error:" << e.errorString();
+}
+
+void SslManager::onSocketError(QAbstractSocket::SocketError error)
+{
+    auto *ssl = qobject_cast<QSslSocket*>(sender());
+    qWarning() << "Socket error:" << error
+               << (ssl ? ssl->peerAddress().toString() : "unknown peer");
 }
