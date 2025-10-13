@@ -2,9 +2,19 @@
 
 SessionManager::SessionManager(QObject *parent)
     : QObject{parent}
-{}
-
-void SessionManager::createSession(QSslSocket *socket)
 {
-    //
+
+}
+
+void SessionManager::createSession(QPointer<QSslSocket> socket)
+{
+    ClientSession* session = new ClientSession(this, socket);
+    connect(session, &ClientSession::expired ,this, &SessionManager::onSessionExpired);
+    m_sessions.insert(session);
+}
+
+void SessionManager::onSessionExpired(ClientSession *session)
+{
+    m_sessions.remove(session);
+    session->deleteLater();
 }

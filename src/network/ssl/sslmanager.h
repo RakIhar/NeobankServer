@@ -30,7 +30,6 @@ private slots:
     void onSslErrors(const QList<QSslError> &errors);
     void onSocketError(QAbstractSocket::SocketError error);
 
-
 private:
     QSslServer* m_sslServer;
     SessionManager* m_sessionManager;
@@ -38,9 +37,7 @@ private:
 
     void initializeConfig();
     void initializeServerSlots();
-    void initializeSocketSlots(QSslSocket *sslSocket);
-
-
+    void initializeSocketSlots(QPointer<QSslSocket> sslSocket);
 signals:
 };
 

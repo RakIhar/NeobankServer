@@ -77,7 +77,7 @@ void SslManager::initializeServerSlots()
     connect(m_sslServer, &QSslServer::acceptError, this, &SslManager::onAcceptError);
 }
 
-void SslManager::initializeSocketSlots(QSslSocket *sslSocket)
+void SslManager::initializeSocketSlots(QPointer<QSslSocket> sslSocket)
 {
     connect(sslSocket, &QSslSocket::encrypted,
             this, &SslManager::onEncryptedReady, Qt::UniqueConnection);
