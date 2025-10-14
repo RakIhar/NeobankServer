@@ -13,3 +13,18 @@ ClientSession::ClientSession(QObject *parent, QPointer<QSslSocket> socket)
     });
     m_timer.start();
 }
+
+void ClientSession::onErrorOccurred(QAbstractSocket::SocketError socketError)
+{
+
+}
+
+void ClientSession::onReadyRead()
+{
+
+}
+
+void ClientSession::onDisconnected()
+{
+
+}

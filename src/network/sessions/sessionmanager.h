@@ -9,9 +9,9 @@
 #include <QSslSocket>
 #include <QPointer>
 
-//хранит все сессии
-//создает и удаляет сессии
-//управляет временем их жизни
+//Отвечает за жизненный цикл сессий.
+//Создаёт ClientSession и хранит их.
+//Подписывает сокет на read/write/error/disconnected в рамках конкретной сессии.
 
 inline size_t qHash(const QPointer<ClientSession> &ptr, size_t seed = 0) noexcept {
     return qHash(ptr.data(), seed);
@@ -28,7 +28,6 @@ private:
 
 private slots:
     void onSessionExpired(ClientSession *session);
-
 signals:
 };
 

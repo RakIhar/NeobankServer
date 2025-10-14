@@ -24,10 +24,6 @@
 // Сигнал disconnected()                                    Соединение закрыто.
 // Сигнал errorOccurred(QAbstractSocket::SocketError)       Ошибка.
 
-//QSslSocket
-// Сигнал sslErrors(const QList<QSslError> &errors)         Ошибка проверки сертификата
-// Сигнал peerVerifyError(const QSslError &error)           Ошибка верификации пира (например, неверный CN)
-
 /*
 Аутентификацию и авторизацию — хранение токена, ID пользователя, ролей.
 
@@ -50,6 +46,11 @@ public:
 private:
     QPointer<QSslSocket> m_socket;
     QTimer m_timer;
+private slots:
+    void onErrorOccurred(QAbstractSocket::SocketError socketError);
+    void onReadyRead();
+    void onDisconnected();
+    //newSessionTicketReceived
 signals:
     void expired(ClientSession *self);
 };

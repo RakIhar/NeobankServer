@@ -7,7 +7,35 @@
 #include <QList>
 #include <QSslCipher>
 
-//полное управление SSL/TLS соединениями
+//управление SSL/TLS соединениями
+
+/*
+QSslServer:
+alertReceived
+скип
+alertSent
+скип
+acceptError(QAbstractSocket::SocketError socketError)
+ошибка подключения - уровень TcpServer. Сокет не создается
+errorOccurred
+ошибка на протяжении рукопожатия. Сокет уничтожается
+handshakeInterruptedOnError
+ошибка проверки сертификата. Можно продолжить
+peerVerifyError
+ошибка при верификации. Если ничего не делать, то вызовется sslErrors
+sslErrors
+Список ошибок после рукопожатия, можно обработать
+
+QSslSocket:
+handshakeInterruptedOnError
+то же самое, что и в сервере
+peerVerifyError
+то же самое, что и в сервере
+sslErrors
+то же самое, что и в сервере
+errorOccurred
+уровень AbstractSocket. Ошибка на протяжение передачи или рукопожатия
+*/
 
 void printConfig(QSslConfiguration sslConfig)
 {
@@ -33,7 +61,7 @@ SslManager::SslManager(QObject *parent, SessionManager *sessionManager)
     : QObject(parent), m_sessionManager(sessionManager)
 {
     initializeConfig();
-    initializeServerSlots();
+    connect(m_sslServer, &QSslServer::newConnection, this, &SslManager::onNewConnection);
 
     if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //настроить сами порты и прочее
         qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
@@ -71,12 +99,6 @@ void SslManager::initializeConfig()
     m_sslServer->setSslConfiguration(sslConfig);
 }
 
-void SslManager::initializeServerSlots()
-{
-    connect(m_sslServer, &QSslServer::newConnection, this, &SslManager::onNewConnection);
-    connect(m_sslServer, &QSslServer::acceptError, this, &SslManager::onAcceptError);
-}
-
 void SslManager::initializeSocketSlots(QPointer<QSslSocket> sslSocket)
 {
     connect(sslSocket, &QSslSocket::encrypted,
@@ -84,13 +106,7 @@ void SslManager::initializeSocketSlots(QPointer<QSslSocket> sslSocket)
     connect(sslSocket, &QSslSocket::sslErrors,
             this, &SslManager::onSslErrors, Qt::UniqueConnection);
     connect(sslSocket, &QSslSocket::errorOccurred,
-            this, &SslManager::onSocketError, Qt::UniqueConnection);
-    connect(sslSocket, &QSslSocket::handshakeInterruptedOnError,
-            this, [](const QSslError &e){ qWarning() << "Handshake interrupted:" << e.errorString(); });
-    connect(sslSocket, &QSslSocket::disconnected, this, [this, sslSocket]() {
-        m_activeSockets.remove(sslSocket);
-        sslSocket->deleteLater();
-    });
+            this, &SslManager::onErrorOccurred, Qt::UniqueConnection);
 }
 
 void SslManager::onNewConnection()
@@ -110,11 +126,7 @@ void SslManager::onEncryptedReady()
         return;
 
     m_sessionManager->createSession(ssl);
-}
-
-void SslManager::onAcceptError(QAbstractSocket::SocketError error)
-{
-    //
+    m_activeSockets.remove(ssl);
 }
 
 void SslManager::onSslErrors(const QList<QSslError> &errors)
@@ -123,7 +135,7 @@ void SslManager::onSslErrors(const QList<QSslError> &errors)
         qWarning() << "SSL error:" << e.errorString();
 }
 
-void SslManager::onSocketError(QAbstractSocket::SocketError error)
+void SslManager::onErrorOccurred(QAbstractSocket::SocketError error)
 {
     auto *ssl = qobject_cast<QSslSocket*>(sender());
     qWarning() << "Socket error:" << error
