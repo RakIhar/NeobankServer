@@ -23,11 +23,15 @@ class SessionManager : public QObject
 public:
     explicit SessionManager(QObject *parent = nullptr);
     void createSession(QPointer<QSslSocket> socket);
+    void removeSession(ClientSession *session);
+    int activeCount() const;
+    QList<ClientSession*> sessions() const;
 private:
     QSet<QPointer<ClientSession>> m_sessions;
-
+    QTimer m_cleanupTimer;
 private slots:
     void onSessionExpired(ClientSession *session);
+    void cleanup();
 signals:
 };
 

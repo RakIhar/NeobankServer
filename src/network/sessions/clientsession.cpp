@@ -14,6 +14,16 @@ ClientSession::ClientSession(QObject *parent, QPointer<QSslSocket> socket)
     m_timer.start();
 }
 
+bool ClientSession::isExpired() const
+{
+    return true;
+}
+
+void ClientSession::extendLifetime()
+{
+
+}
+
 void ClientSession::onErrorOccurred(QAbstractSocket::SocketError socketError)
 {
 

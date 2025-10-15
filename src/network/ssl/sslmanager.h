@@ -13,6 +13,7 @@
 
 // Отвечает за прослушивание порта, создание сокета и handshake.
 // Обрабатывает только TLS‑ошибки и encrypted.
+// Может накинуть методов для очистки, защиты от Dos, DDoS
 
 inline size_t qHash(const QPointer<QSslSocket> &ptr, size_t seed = 0) noexcept
 {
@@ -28,9 +29,11 @@ public:
 private slots:
     void onNewConnection();
     void onEncryptedReady();
-    void onSslErrors(const QList<QSslError> &errors);
-    void onErrorOccurred(QAbstractSocket::SocketError error);
-
+    void onSslErrors(QSslSocket *socket, const QList<QSslError> &errors);
+    void onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error);
+    void onAcceptError(QAbstractSocket::SocketError socketError);
+    void onHandshakeInterruptedOnError(QSslSocket *socket, const QSslError &error);
+    void onPeerVerifyError(QSslSocket *socket, const QSslError &error);
 private:
     QSslServer* m_sslServer;
     SessionManager* m_sessionManager;
@@ -39,6 +42,9 @@ private:
     void initializeConfig();
     void initializeServerSlots();
     void initializeSocketSlots(QPointer<QSslSocket> sslSocket);
+    void disconnectAll();
+
+    ClientSession* sessionForSocket(QPointer<QSslSocket> socket) const;
 signals:
 };
 

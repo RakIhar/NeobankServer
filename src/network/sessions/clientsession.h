@@ -46,6 +46,12 @@ public:
 private:
     QPointer<QSslSocket> m_socket;
     QTimer m_timer;
+
+    bool sendData(const QByteArray &data);      // Отправка данных клиенту
+    void processIncomingData(const QByteArray &data); // Обработка входящих данных
+
+    bool isExpired() const;
+    void extendLifetime();
 private slots:
     void onErrorOccurred(QAbstractSocket::SocketError socketError);
     void onReadyRead();
@@ -54,5 +60,17 @@ private slots:
 signals:
     void expired(ClientSession *self);
 };
+/*
+private:
 
+private slots:
+    void onProtocolMessageReceived(const QByteArray &message); // слот для внутренней обработки
+signals:
+    void expired(ClientSession *self);
+    void dataReceived(ClientSession *self, const QByteArray &data); // сигнал о полученных данных
+    void dataSent(ClientSession *self, const QByteArray &data);     // сигнал об отправке данных
+    void protocolError(ClientSession *self, const QString &error);  // сигнал ошибки протокола
+};
+
+*/
 #endif // CLIENTSESSION_H

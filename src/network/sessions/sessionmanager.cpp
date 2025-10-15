@@ -13,6 +13,16 @@ void SessionManager::createSession(QPointer<QSslSocket> socket)
     m_sessions.insert(session);
 }
 
+void SessionManager::removeSession(ClientSession *session)
+{
+
+}
+
+int SessionManager::activeCount() const
+{
+
+}
+
 void SessionManager::onSessionExpired(ClientSession *session)
 {
     m_sessions.remove(session);
