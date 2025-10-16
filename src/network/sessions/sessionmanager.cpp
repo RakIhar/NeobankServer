@@ -29,8 +29,13 @@ void SessionManager::onSessionExpired(ClientSession *session)
     session->deleteLater();
 }
 
+void SessionManager::cleanup()
+{
+
+}
+
 
 // connect(sslSocket, &QSslSocket::disconnected, this, [this, sslSocket]() {
-    // m_activeSockets.remove(sslSocket);
-    // sslSocket->deleteLater();
+//     m_activeSockets.remove(sslSocket);
+//     sslSocket->deleteLater();
 // });

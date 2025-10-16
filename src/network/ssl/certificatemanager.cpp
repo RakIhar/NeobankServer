@@ -2,4 +2,6 @@
 
 CertificateManager::CertificateManager(QObject *parent)
     : QObject{parent}
-{}
+{
+
+}

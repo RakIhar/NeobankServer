@@ -18,6 +18,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
@@ -52,11 +53,13 @@ set(SOURCES
   src/database/repositories/transactionrepository.h src/database/repositories/transactionrepository.cpp
 )
 
-add_executable(NeobankServer ${SOURCES})
+add_executable(NeobankServer ${SOURCES}
+  src/security/ddos/ddosmanager.h src/security/ddos/ddosmanager.cpp)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 
 target_link_libraries(NeobankServer PRIVATE Qt6::Core Qt::Network Qt6::Sql PostgreSQL::PostgreSQL)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS NeobankServer
