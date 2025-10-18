@@ -8,100 +8,54 @@
 #include <QSslSocket>
 #include <QTcpSocket>
 #include <QTimer>
-
 #include "../../common/constants.h"
-//QTcpSocket
-// void connectToHost(const QString &host, quint16 port)    Подключиться к серверу (для клиента).
-// void disconnectFromHost()                                Закрыть соединение корректно.
+#include "../../security/authentification/authmanager.h"
 
-// qint64 write(const QByteArray &data)                     Отправить данные.
-// QByteArray readAll() / read(qint64 maxSize)              Прочитать данные.
-// qint64 bytesAvailable()                                  Проверить, сколько байт можно прочитать.
-// qint64 bytesToWrite()                                    Сколько данных ещё не отправлено.
-// QHostAddress peerAddress() / peerPort()                  Адрес и порт клиента.
-// QHostAddress localAddress() / localPort()                Адрес и порт сокета на локальной стороне.
-// Сигнал readyRead()                                       Срабатывает, когда пришли данные.
-// Сигнал connected()                                       Сокет подключился (для клиента).
-// Сигнал disconnected()                                    Соединение закрыто.
-// Сигнал errorOccurred(QAbstractSocket::SocketError)       Ошибка.
+//Отвечает за жизненный цикл сессий.
+//Создаёт ClientSession и хранит их.
+//Подписывает сокет на read/write/error/disconnected в рамках конкретной сессии.
 
-/*
-Аутентификацию и авторизацию — хранение токена, ID пользователя, ролей.
+//Аутентификация:
+//1 Аутентификация пользователя (покуда без двухфакторки)
+//2 Создание SessionID
+//3 Связывание SessionID + UserID в базе данных
+//4 Передача SessionID клиенту
+//5 Запись входа (опционально)
 
-Состояние соединения — активность, тайм-аут, идентификатор сокета.
+//При обращении к API:
+//1 Проверить наличие и валидность(в бд) SessionID
+//2 Проверить время бездействия (?)
+//3 Одноразовые токены
 
-Буферизацию данных — частичные запросы, фрагменты сообщений.
+//Завершение сессии:
+//1 Логаут - кнопка выйти
+//2 Таймаут
+//3 Абсолютный таймаут
+//4 Параллельный логин
+//5 Принудительное завершение
 
-Очередь операций — команды, ожидающие выполнения или ответов.
-
-Ошибки и флаги — состояние последней операции, причина обрыва.
-
-Контекст транзакции — параметры бизнес-операций, текущие шаги.
-*/
-
-//Идентифицировать сессию пользователем?
-
-
-struct SessionData
-{
-    QByteArray userID;
-    QByteArray sessionID;
-    bool isAuthenticated = false;
-    Role role = Role::None;
-    AuthMethod authMethod = AuthMethod::None;
-    Permission permission = Permission::None;
-
-};
-
-/*
-clientCertHash или tlsFingerprint — привязка к TLS-сеансу.
-lastActivity (QDateTime) — для таймаута неактивности.
-Таймер keep-alive.
-sessionStartTime.
-ipAddress, userAgent (если известны).
-Буфер или очередь запросов, если протокол асинхронный.
-accountContext / currentOperation (например, текущая транзакция).
-locale или другие пользовательские параметры.
-
-Ссылку на SessionManager для уведомления об окончании.
-Ссылку на AuthManager или ProtocolHandler для делегирования логики.
-*/
+//С клиентом сессия связывается по SSL, с БД сессия связывается по SessionID
 
 class ClientSession : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientSession(QObject *parent, QPointer<QSslSocket> socket);
+    explicit ClientSession(QSslSocket* socket, QObject *parent = nullptr);
 private:
-    SessionData m_sData;
-
-    QPointer<QSslSocket> m_socket;
+    QSslSocket* m_socket;
     QTimer m_timer;
-
-    bool sendData(const QByteArray &data);
+    void sendData(const QByteArray &data);
     void processIncomingData(const QByteArray &data);
-
-    bool isExpired() const;
     void extendLifetime();
+
 private slots:
     void onErrorOccurred(QAbstractSocket::SocketError socketError);
     void onReadyRead();
-    void onDisconnected();
-    //newSessionTicketReceived
+    void onSocketDisconnected();
+    void onSocketDestroyed();
 signals:
-    void expired(ClientSession *self);
-};
-/*
-private:
-
-private slots:
-    void onProtocolMessageReceived(const QByteArray &message); // слот для внутренней обработки
-signals:
-    void expired(ClientSession *self);
-    void dataReceived(ClientSession *self, const QByteArray &data); // сигнал о полученных данных
-    void dataSent(ClientSession *self, const QByteArray &data);     // сигнал об отправке данных
-    void protocolError(ClientSession *self, const QString &error);  // сигнал ошибки протокола
+    void closed(ClientSession *self);
+    void authenticated(QByteArray sessionID, ClientSession *self);
 };
 
-*/
 #endif // CLIENTSESSION_H

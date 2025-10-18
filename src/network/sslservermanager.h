@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QSslServer>
 #include <QSsl>
-#include "../sessions/sessionmanager.h"
+#include "sessions/sessionmanager.h"
 #include <QSslSocket>
 
 #include <QPointer>
@@ -43,7 +43,7 @@ private:
     SessionManager* m_sessionManager;
     QSet<QPointer<QSslSocket>> m_activeSockets;
 
-    void initializeConfig();
+    void initializeServerConfig();
     void initializeServerSlots();
 
     void disconnectAll();

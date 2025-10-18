@@ -1,48 +1,35 @@
 #include "sessionmanager.h"
 
-SessionManager::SessionManager(QObject *parent)
-    : QObject{parent}
-{
+SessionManager::SessionManager(QObject *parent) : QObject(parent){}
 
+ClientSession *SessionManager::createUnauthenticatedSession(QSslSocket *socket)
+{
+    auto* session = new ClientSession(socket, this);
+
+    connect(session, &ClientSession::closed,
+            this, &SessionManager::onSessionClosed);
+    connect(session, &ClientSession::authenticated,
+            this, &SessionManager::onSessionAuthenticated);
+
+    return session;
 }
 
-void SessionManager::createSession(QPointer<QSslSocket> socket)
-{
-    ClientSession* session = new ClientSession(this, socket);
-    connect(session, &ClientSession::expired,
-            this, &SessionManager::onSessionExpired);
-    m_sessions.insert(session);
-}
-
-// void SessionManager::removeSession(ClientSession *session)
+// ClientSession *SessionManager::findBySessionId(const QByteArray &sessionId) const //доделать
 // {
 
 // }
 
-// int SessionManager::activeCount() const
-// {
-//     return m_sessions.count(); //улучшить
-// }
 
-void SessionManager::onSessionExpired(ClientSession *session)
+void SessionManager::onSessionClosed(ClientSession *session) //переделать
 {
-    m_sessions.remove(session); //улучшить
+    auto it = std::find_if(m_authenticatedSessions.begin(), m_authenticatedSessions.end(),
+                           [session](auto v){ return v == session; });
+    if (it != m_authenticatedSessions.end())
+        m_authenticatedSessions.erase(it);
     session->deleteLater();
 }
 
-void SessionManager::cleanup()
+void SessionManager::onSessionAuthenticated(QByteArray sessionID, ClientSession *session)
 {
-    auto it = m_sessions.begin();
-    while(it != m_sessions.end())
-    {
-        if (*it == nullptr)
-        {
-            m_sessions.erase(it);
-        }
-        else
-        {
-            ++it;
-        }
-    }
+    m_authenticatedSessions[sessionID] = session;
 }
-

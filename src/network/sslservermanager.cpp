@@ -6,13 +6,9 @@
 SslServerManager::SslServerManager(QObject *parent)
     : QObject(parent)
 {
-    initializeConfig();
-
-    if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //настроить сами порты и прочее
-        qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
-    } else {
-        qInfo() << "TLS 1.3 сервер слушает на порту 4433";
-    }
+    m_sessionManager = new SessionManager(this);
+    initializeServerConfig();
+    initializeServerSlots();
 
     constexpr int ONE_MINUTE = 60000;
     m_cleanupTimer.setInterval(ONE_MINUTE);
@@ -21,23 +17,13 @@ SslServerManager::SslServerManager(QObject *parent)
     m_cleanupTimer.start();
 }
 
-void SslServerManager::startServer()
-{
-
-}
-
-void SslServerManager::stopServer()
-{
-
-}
-
-void SslServerManager::initializeConfig()
+void SslServerManager::initializeServerConfig()
 {
     QFile certFile("../../certificates/server.crt");
     QFile keyFile("../../certificates/server.key");
 
     if (!certFile.open(QIODevice::ReadOnly) || !keyFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Не удалось открыть сертификат или ключ"; //лучше исключение
+        qWarning() << "Не удалось открыть сертификат или ключ";
         return;
     }
 
@@ -80,6 +66,27 @@ void SslServerManager::initializeServerSlots()
 
 //===========================================================================//
 
+void SslServerManager::startServer()
+{
+    if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //настроить сами порты и прочее
+        qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
+    } else {
+        qInfo() << "TLS 1.3 сервер слушает на порту 4433";
+    }
+}
+
+void SslServerManager::stopServer()
+{
+    m_sslServer->close();
+}
+
+void SslServerManager::disconnectAll()
+{
+
+}
+
+//===========================================================================//
+
 void SslServerManager::onNewConnection()
 {
     QTcpSocket *baseSocket = m_sslServer->nextPendingConnection();
@@ -89,6 +96,7 @@ void SslServerManager::onNewConnection()
     m_activeSockets.insert(sslSocket);
     connect(sslSocket, &QSslSocket::encrypted,
             this, &SslServerManager::onEncryptedReady, Qt::UniqueConnection);
+    sslSocket->setParent(this);
 }
 
 void SslServerManager::onEncryptedReady()
@@ -97,13 +105,8 @@ void SslServerManager::onEncryptedReady()
     if (!ssl)
         return;
 
-    m_sessionManager->createSession(ssl);
+    m_sessionManager->createUnauthenticatedSession(ssl);
     m_activeSockets.remove(ssl);
-}
-
-void SslServerManager::disconnectAll()
-{
-
 }
 
 void SslServerManager::cleanupDeadSockets()

@@ -1,6 +1,6 @@
 #include <QCoreApplication>
 #include <QTimer>
-#include "network/ssl/sslservermanager.h"
+#include "network/sslservermanager.h"
 
 int main(int argc, char *argv[])
 {
