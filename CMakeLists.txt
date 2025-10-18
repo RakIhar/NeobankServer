@@ -19,21 +19,24 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
   src/main.cpp
   src/network/protocols/bankingprotocol.h src/network/protocols/bankingprotocol.cpp
   src/network/protocols/messageparser.h src/network/protocols/messageparser.cpp
-  src/core/applicationserver.h src/core/applicationserver.cpp
+
   src/network/sessions/sessionmanager.h src/network/sessions/sessionmanager.cpp
   src/network/sessions/clientsession.h src/network/sessions/clientsession.cpp
-  src/network/ssl/sslmanager.h src/network/ssl/sslmanager.cpp
+  src/network/ssl/sslservermanager.h src/network/ssl/sslservermanager.cpp
   src/network/ssl/certificatemanager.h src/network/ssl/certificatemanager.cpp
   src/security/encryption/aesencryptor.h src/security/encryption/aesencryptor.cpp
   src/security/encryption/hashing.h src/security/encryption/hashing.cpp
   src/security/authentification/authmanager.h src/security/authentification/authmanager.cpp
-  src/security/authentification/tokenmanager.h src/security/authentification/tokenmanager.cpp
+
   src/security/audit/auditor.h src/security/audit/auditor.cpp
   src/security/audit/auditlogger.h src/security/audit/auditlogger.cpp
   src/business/services/accountservice.h src/business/services/accountservice.cpp
@@ -54,11 +57,17 @@ set(SOURCES
 )
 
 add_executable(NeobankServer ${SOURCES}
-  src/security/ddos/ddosmanager.h src/security/ddos/ddosmanager.cpp)
+  src/security/ddos/ddosmanager.h src/security/ddos/ddosmanager.cpp
+  src/security/authentification/registermanager.h src/security/authentification/registermanager.cpp
+  src/security/authentification/loginmanager.h src/security/authentification/loginmanager.cpp
+  src/security/authentification/passwordresetmanager.h src/security/authentification/passwordresetmanager.cpp)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 
 target_link_libraries(NeobankServer PRIVATE Qt6::Core Qt::Network Qt6::Sql PostgreSQL::PostgreSQL)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)

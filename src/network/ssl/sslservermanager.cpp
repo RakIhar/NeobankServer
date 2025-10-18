@@ -1,14 +1,10 @@
-#include "sslmanager.h"
+#include "sslservermanager.h"
 #include <QFile>
-#include <QDebug>
-#include <QSslConfiguration>
-#include <QSslCertificate>
 #include <QSslKey>
-#include <QList>
 #include <QSslCipher>
 
-SslManager::SslManager(QObject *parent, SessionManager *sessionManager)
-    : QObject(parent), m_sessionManager(sessionManager)
+SslServerManager::SslServerManager(QObject *parent)
+    : QObject(parent)
 {
     initializeConfig();
 
@@ -17,9 +13,25 @@ SslManager::SslManager(QObject *parent, SessionManager *sessionManager)
     } else {
         qInfo() << "TLS 1.3 сервер слушает на порту 4433";
     }
+
+    constexpr int ONE_MINUTE = 60000;
+    m_cleanupTimer.setInterval(ONE_MINUTE);
+    m_cleanupTimer.setSingleShot(false);
+    connect(&m_cleanupTimer, &QTimer::timeout, this, &SslServerManager::cleanupDeadSockets);
+    m_cleanupTimer.start();
 }
 
-void SslManager::initializeConfig()
+void SslServerManager::startServer()
+{
+
+}
+
+void SslServerManager::stopServer()
+{
+
+}
+
+void SslServerManager::initializeConfig()
 {
     QFile certFile("../../certificates/server.crt");
     QFile keyFile("../../certificates/server.key");
@@ -50,36 +62,36 @@ void SslManager::initializeConfig()
     m_sslServer->setSslConfiguration(sslConfig);
 }
 
-void SslManager::initializeServerSlots()
+void SslServerManager::initializeServerSlots()
 {
     connect(m_sslServer, &QSslServer::newConnection,
-            this, &SslManager::onNewConnection);
+            this, &SslServerManager::onNewConnection);
     connect(m_sslServer, &QSslServer::errorOccurred,
-            this, &SslManager::onErrorOccurred);
+            this, &SslServerManager::onErrorOccurred);
     connect(m_sslServer, &QSslServer::acceptError,
-            this, &SslManager::onAcceptError);
+            this, &SslServerManager::onAcceptError);
     connect(m_sslServer, &QSslServer::handshakeInterruptedOnError,
-            this, &SslManager::onHandshakeInterruptedOnError);
+            this, &SslServerManager::onHandshakeInterruptedOnError);
     connect(m_sslServer, &QSslServer::peerVerifyError,
-            this, &SslManager::onPeerVerifyError);
+            this, &SslServerManager::onPeerVerifyError);
     connect(m_sslServer, &QSslServer::sslErrors,
-            this, &SslManager::onSslErrors);
+            this, &SslServerManager::onSslErrors);
 }
 
 //===========================================================================//
 
-void SslManager::onNewConnection()
+void SslServerManager::onNewConnection()
 {
-    QTcpSocket *base = m_sslServer->nextPendingConnection();
-    QSslSocket *ssl = qobject_cast<QSslSocket*>(base);
-    if (!ssl)
+    QTcpSocket *baseSocket = m_sslServer->nextPendingConnection();
+    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(baseSocket);
+    if (!sslSocket)
         return;
-    m_activeSockets.insert(ssl);
-    connect(ssl, &QSslSocket::encrypted,
-            this, &SslManager::onEncryptedReady, Qt::UniqueConnection);
+    m_activeSockets.insert(sslSocket);
+    connect(sslSocket, &QSslSocket::encrypted,
+            this, &SslServerManager::onEncryptedReady, Qt::UniqueConnection);
 }
 
-void SslManager::onEncryptedReady()
+void SslServerManager::onEncryptedReady()
 {
     QSslSocket *ssl = qobject_cast<QSslSocket*>(sender());
     if (!ssl)
@@ -89,19 +101,35 @@ void SslManager::onEncryptedReady()
     m_activeSockets.remove(ssl);
 }
 
-void SslManager::disconnectAll()
+void SslServerManager::disconnectAll()
 {
 
+}
+
+void SslServerManager::cleanupDeadSockets()
+{
+    auto it = m_activeSockets.begin();
+    while (it != m_activeSockets.end())
+    {
+        if (*it == nullptr)
+        {
+            it = m_activeSockets.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }
 
 //===========================================================================//
 
-void SslManager::onAcceptError(QAbstractSocket::SocketError socketError)
+void SslServerManager::onAcceptError(QAbstractSocket::SocketError socketError)
 {
     qWarning() << "Accept error: " << socketError;
 }
 
-void SslManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors)
+void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors)
 {
     bool isThereCriticalError = false;
     for (const auto &e : errors)
@@ -133,13 +161,13 @@ void SslManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors)
     }
 }
 
-void SslManager::onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error)
+void SslServerManager::onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error)
 {
     qWarning() << "Error occurred: " << error
                << (socket ? socket->peerAddress().toString() : "unknown peer");
 }
 
-void SslManager::onHandshakeInterruptedOnError(QSslSocket *socket, const QSslError &error)
+void SslServerManager::onHandshakeInterruptedOnError(QSslSocket *socket, const QSslError &error)
 {
     //можно обработать
     //должен быть Qt::DirectConnection
@@ -149,7 +177,7 @@ void SslManager::onHandshakeInterruptedOnError(QSslSocket *socket, const QSslErr
     // socket->
 }
 
-void SslManager::onPeerVerifyError(QSslSocket *socket, const QSslError &error)
+void SslServerManager::onPeerVerifyError(QSslSocket *socket, const QSslError &error)
 {
     //можно заранее обработать, а иначе вызовется SslErrors
     qWarning() << "Peer verify error: " << error.errorString();

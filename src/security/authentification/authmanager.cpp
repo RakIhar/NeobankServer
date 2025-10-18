@@ -2,4 +2,6 @@
 
 AuthManager::AuthManager(QObject *parent)
     : QObject{parent}
-{}
+{
+
+}

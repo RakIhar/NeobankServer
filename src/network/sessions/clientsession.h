@@ -9,6 +9,7 @@
 #include <QTcpSocket>
 #include <QTimer>
 
+#include "../../common/constants.h"
 //QTcpSocket
 // void connectToHost(const QString &host, quint16 port)    Подключиться к серверу (для клиента).
 // void disconnectFromHost()                                Закрыть соединение корректно.
@@ -40,17 +41,45 @@
 
 //Идентифицировать сессию пользователем?
 
+
+struct SessionData
+{
+    QByteArray userID;
+    QByteArray sessionID;
+    bool isAuthenticated = false;
+    Role role = Role::None;
+    AuthMethod authMethod = AuthMethod::None;
+    Permission permission = Permission::None;
+
+};
+
+/*
+clientCertHash или tlsFingerprint — привязка к TLS-сеансу.
+lastActivity (QDateTime) — для таймаута неактивности.
+Таймер keep-alive.
+sessionStartTime.
+ipAddress, userAgent (если известны).
+Буфер или очередь запросов, если протокол асинхронный.
+accountContext / currentOperation (например, текущая транзакция).
+locale или другие пользовательские параметры.
+
+Ссылку на SessionManager для уведомления об окончании.
+Ссылку на AuthManager или ProtocolHandler для делегирования логики.
+*/
+
 class ClientSession : public QObject
 {
     Q_OBJECT
 public:
     explicit ClientSession(QObject *parent, QPointer<QSslSocket> socket);
 private:
+    SessionData m_sData;
+
     QPointer<QSslSocket> m_socket;
     QTimer m_timer;
 
-    bool sendData(const QByteArray &data);      // Отправка данных клиенту
-    void processIncomingData(const QByteArray &data); // Обработка входящих данных
+    bool sendData(const QByteArray &data);
+    void processIncomingData(const QByteArray &data);
 
     bool isExpired() const;
     void extendLifetime();
