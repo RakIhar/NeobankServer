@@ -4,9 +4,9 @@ ClientSession::ClientSession(QSslSocket *socket, QObject *parent) : QObject{pare
 {
     m_socket = socket;
     m_socket->setParent(this);
-    connect(socket, &QSslSocket::disconnected,
+    connect(m_socket, &QSslSocket::disconnected,
             this, &ClientSession::onSocketDisconnected);
-    connect(socket, &QSslSocket::destroyed,
+    connect(m_socket, &QSslSocket::destroyed,
             this, &ClientSession::onSocketDestroyed);
     connect(m_socket, &QSslSocket::readyRead,
             this, &ClientSession::onReadyRead);
@@ -21,10 +21,29 @@ ClientSession::ClientSession(QSslSocket *socket, QObject *parent) : QObject{pare
         this->m_socket->disconnectFromHost();
     });
     m_timer.start();
+
+    // DEBUG
+    connect(m_socket, &QSslSocket::disconnected,
+            [this]{qDebug() << "m_socket disconnected";});
+    connect(m_socket, &QSslSocket::destroyed,
+            [this]{qDebug() << "m_socket destroyed";});
+    connect(m_socket, &QSslSocket::aboutToClose,
+            [this]{qDebug() << "m_socket aboutToClose";});
+    connect(m_socket, &QSslSocket::readyRead,
+            [this]{qDebug() << "m_socket readyRead";});
+    // connect(m_socket, &ClientSession::authenticated,
+            // [this](){qDebug() << "m_socket authenticated";});
+    // connect(m_socket, &ClientSession::closed,
+            // [this](){qDebug() << "m_socket closed";});
+    connect(m_socket, &ClientSession::destroyed,
+            [this](){qDebug() << "session destroyed";});
 }
 
 void ClientSession::sendData(const QByteArray &data)
 {
+    qDebug() << "ClientSession::sendData";  //DEBUG
+    qDebug() << data;                       //DEBUG
+
     if (!m_socket) return;
 
     m_socket->write(data);
@@ -33,7 +52,9 @@ void ClientSession::sendData(const QByteArray &data)
 
 void ClientSession::processIncomingData(const QByteArray &data)
 {
-
+    qDebug() << "ClientSession::processIncomingData";   //DEBUG
+    qDebug() << data;                                   //DEBUG
+    sendData("Server Hello");                           //DEBUG
 }
 
 void ClientSession::extendLifetime()

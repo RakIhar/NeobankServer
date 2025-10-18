@@ -7,8 +7,28 @@ SslServerManager::SslServerManager(QObject *parent)
     : QObject(parent)
 {
     m_sessionManager = new SessionManager(this);
+    m_sslServer = new QSslServer(this);
+
+    connect(m_sslServer, &QSslServer::errorOccurred,
+            this, &SslServerManager::onErrorOccurred);
+    connect(m_sslServer, &QSslServer::sslErrors,
+            this, &SslServerManager::onSslErrors);
+    connect(m_sslServer, &QSslServer::startedEncryptionHandshake,
+            this, &SslServerManager::onStartedEncryptionHandshake);
+
+    //DEBUG//
+    connect(m_sslServer, &QSslServer::newConnection,
+            [this]{qDebug() << "newConnection";});
+    connect(m_sslServer, &QSslServer::peerVerifyError,
+            [this]{qDebug() << "peerVerifyError";});
+    connect(m_sslServer, &QSslServer::handshakeInterruptedOnError,
+            [this]{qDebug() << "handshakeInterruptedOnError";});
+    connect(m_sslServer, &QSslServer::acceptError,
+            [this]{qDebug() << "acceptError";});
+    connect(m_sslServer, &QSslServer::startedEncryptionHandshake,
+            [this]{qDebug() << "startedEncryptionHandshake";});
+
     initializeServerConfig();
-    initializeServerSlots();
 
     constexpr int ONE_MINUTE = 60000;
     m_cleanupTimer.setInterval(ONE_MINUTE);
@@ -34,34 +54,15 @@ void SslServerManager::initializeServerConfig()
     sslConfig.setPrivateKey(key);
 
     sslConfig.setProtocol(QSsl::SslProtocol::TlsV1_3);
-    sslConfig.setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyPeer);
+    sslConfig.setPeerVerifyMode(QSslSocket::PeerVerifyMode::VerifyNone);
     QList<QSslCipher> ciphers {
                               QSslCipher("TLS_AES_256_GCM_SHA384"),
                               QSslCipher("TLS_AES_128_GCM_SHA256"),
                               QSslCipher("TLS_CHACHA20_POLY1305_SHA256")};
 
     sslConfig.setCiphers(ciphers);
-
-    sslConfig.setHandshakeMustInterruptOnError(false);
-
-    m_sslServer = new QSslServer(this);
+    // sslConfig.setHandshakeMustInterruptOnError(false);
     m_sslServer->setSslConfiguration(sslConfig);
-}
-
-void SslServerManager::initializeServerSlots()
-{
-    connect(m_sslServer, &QSslServer::newConnection,
-            this, &SslServerManager::onNewConnection);
-    connect(m_sslServer, &QSslServer::errorOccurred,
-            this, &SslServerManager::onErrorOccurred);
-    connect(m_sslServer, &QSslServer::acceptError,
-            this, &SslServerManager::onAcceptError);
-    connect(m_sslServer, &QSslServer::handshakeInterruptedOnError,
-            this, &SslServerManager::onHandshakeInterruptedOnError);
-    connect(m_sslServer, &QSslServer::peerVerifyError,
-            this, &SslServerManager::onPeerVerifyError);
-    connect(m_sslServer, &QSslServer::sslErrors,
-            this, &SslServerManager::onSslErrors);
 }
 
 //===========================================================================//
@@ -87,16 +88,12 @@ void SslServerManager::disconnectAll()
 
 //===========================================================================//
 
-void SslServerManager::onNewConnection()
+void SslServerManager::onStartedEncryptionHandshake(QSslSocket *socket)
 {
-    QTcpSocket *baseSocket = m_sslServer->nextPendingConnection();
-    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(baseSocket);
-    if (!sslSocket)
-        return;
-    m_activeSockets.insert(sslSocket);
-    connect(sslSocket, &QSslSocket::encrypted,
-            this, &SslServerManager::onEncryptedReady, Qt::UniqueConnection);
-    sslSocket->setParent(this);
+    m_activeSockets.insert(socket);
+    connect(socket, &QSslSocket::encrypted,
+            this, &SslServerManager::onEncryptedReady);
+    socket->setParent(this);
 }
 
 void SslServerManager::onEncryptedReady()
@@ -126,11 +123,6 @@ void SslServerManager::cleanupDeadSockets()
 }
 
 //===========================================================================//
-
-void SslServerManager::onAcceptError(QAbstractSocket::SocketError socketError)
-{
-    qWarning() << "Accept error: " << socketError;
-}
 
 void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors)
 {
@@ -168,21 +160,4 @@ void SslServerManager::onErrorOccurred(QSslSocket *socket, QAbstractSocket::Sock
 {
     qWarning() << "Error occurred: " << error
                << (socket ? socket->peerAddress().toString() : "unknown peer");
-}
-
-void SslServerManager::onHandshakeInterruptedOnError(QSslSocket *socket, const QSslError &error)
-{
-    //можно обработать
-    //должен быть Qt::DirectConnection
-    //sslConfig.setHandshakeMustInterruptOnError(false);
-
-    qWarning() << "Handshake interrupted on error: " << error.errorString();
-    // socket->
-}
-
-void SslServerManager::onPeerVerifyError(QSslSocket *socket, const QSslError &error)
-{
-    //можно заранее обработать, а иначе вызовется SslErrors
-    qWarning() << "Peer verify error: " << error.errorString();
-    // socket->
 }

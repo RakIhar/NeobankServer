@@ -28,15 +28,12 @@ public:
     void startServer();
     void stopServer();
 private slots:
-    void onNewConnection();
     void onEncryptedReady();
     void cleanupDeadSockets();
 
     void onSslErrors(QSslSocket *socket, const QList<QSslError> &errors);
     void onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error);
-    void onAcceptError(QAbstractSocket::SocketError socketError);
-    void onHandshakeInterruptedOnError(QSslSocket *socket, const QSslError &error);
-    void onPeerVerifyError(QSslSocket *socket, const QSslError &error);
+    void onStartedEncryptionHandshake(QSslSocket *socket);
 private:
     QTimer m_cleanupTimer;
     QSslServer* m_sslServer;
@@ -44,7 +41,6 @@ private:
     QSet<QPointer<QSslSocket>> m_activeSockets;
 
     void initializeServerConfig();
-    void initializeServerSlots();
 
     void disconnectAll();
 };
