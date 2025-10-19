@@ -39,4 +39,9 @@ enum class Permission
     Closed      = 1 << 5
 };
 
+enum class ProtocolType
+{
+
+};
+
 #endif // CONSTANTS_H

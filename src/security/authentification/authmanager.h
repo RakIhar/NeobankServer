@@ -3,6 +3,27 @@
 
 #include <QObject>
 #include <QSslSocket>
+#include <QString>
+
+enum class AuthState {
+    None,        // ещё не начинали
+    InProgress,  // идёт процесс (может быть OTP)
+    Completed,   // всё ок
+    Failed       // ошибка
+};
+
+struct AuthContext {
+    AuthState state = AuthState::None;
+    QByteArray login; //или QString
+    QByteArray passwordHash;
+    QByteArray otp;
+};
+
+enum class AuthStatus {
+    Success,   // авторизация завершена
+    Pending,   // нужно продолжить (например, ждём OTP)
+    Fail
+};
 
 class AuthManager : public QObject
 {
@@ -10,9 +31,12 @@ class AuthManager : public QObject
 public:
     explicit AuthManager(QObject *parent = nullptr);
 
-    void authenticate(/*Принять протокол, не работать с сокетом*/);
+    AuthStatus processStep(AuthContext &ctx, const QByteArray &message);
 
-    //гораздо сложнее - выдавать токены, работать с бд, работать с сертификатами
+private:
+    bool verifyCredentials(const QByteArray &login, const QByteArray &password);
+    bool isOtpRequired(const QByteArray &login);
+    bool verifyOtp(const QByteArray &login, const QByteArray &otp);
 signals:
 };
 

@@ -1,15 +1,14 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
-#include <QObject>
+#include <QString>
 
-class Account : public QObject
+struct Account
 {
-    Q_OBJECT
-public:
-    explicit Account(QObject *parent = nullptr);
-
-signals:
+    int id = 0;
+    int userId = 0;
+    double balance = 0.0;
+    QString currency;
 };
 
 #endif // ACCOUNT_H

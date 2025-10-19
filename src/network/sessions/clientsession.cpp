@@ -1,6 +1,6 @@
 #include "clientsession.h"
 
-ClientSession::ClientSession(QSslSocket *socket, QObject *parent) : QObject{parent}
+ClientSession::ClientSession(QSslSocket* socket, AuthManager* authManager, QObject *parent) : QObject(parent), m_authManager(authManager)
 {
     m_socket = socket;
     m_socket->setParent(this);
@@ -23,6 +23,7 @@ ClientSession::ClientSession(QSslSocket *socket, QObject *parent) : QObject{pare
     m_timer.start();
 
     // DEBUG
+    /*
     connect(m_socket, &QSslSocket::disconnected,
             [this]{qDebug() << "m_socket disconnected";});
     connect(m_socket, &QSslSocket::destroyed,
@@ -37,6 +38,7 @@ ClientSession::ClientSession(QSslSocket *socket, QObject *parent) : QObject{pare
             // [this](){qDebug() << "m_socket closed";});
     connect(m_socket, &ClientSession::destroyed,
             [this](){qDebug() << "session destroyed";});
+    */
 }
 
 void ClientSession::sendData(const QByteArray &data)
@@ -48,13 +50,36 @@ void ClientSession::sendData(const QByteArray &data)
 
     m_socket->write(data);
     m_socket->flush(); // TLS сразу шифрует и отправляет
+
+    emit authenticated("123123", this);
 }
 
 void ClientSession::processIncomingData(const QByteArray &data)
 {
-    qDebug() << "ClientSession::processIncomingData";   //DEBUG
-    qDebug() << data;                                   //DEBUG
-    sendData("Server Hello");                           //DEBUG
+    if (m_authContext.state == AuthState::Completed)
+    {
+        // qDebug() << "ClientSession::processIncomingData";   //DEBUG
+        qDebug() << data;                                   //DEBUG
+        sendData("Server Hello");                           //DEBUG
+    }
+    else
+    {
+        m_authManager->processStep(m_authContext, data);
+        if (m_authContext.state == AuthState::Completed)
+        {
+            qDebug() << "authenticated";
+            QByteArray sessionId;
+            emit authenticated(sessionId, this);
+        }
+        if (m_authContext.state == AuthState::Failed)
+        {
+            qDebug() << "failed";
+        }
+        if (m_authContext.state == AuthState::InProgress)
+        {
+            qDebug() << "in progress";
+        }
+    }
 }
 
 void ClientSession::extendLifetime()

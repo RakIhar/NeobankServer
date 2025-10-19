@@ -1,5 +1,3 @@
 #include "accountrepository.h"
 
-AccountRepository::AccountRepository(QObject *parent)
-    : QObject{parent}
-{}
+AccountRepository::AccountRepository(QSqlDatabase db) : m_db(db){}

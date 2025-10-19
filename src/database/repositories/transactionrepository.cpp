@@ -1,5 +1,3 @@
 #include "transactionrepository.h"
 
-TransactionRepository::TransactionRepository(QObject *parent)
-    : QObject{parent}
-{}
+TransactionRepository::TransactionRepository(QSqlDatabase db) : m_db(db){}

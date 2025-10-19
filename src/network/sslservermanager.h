@@ -35,7 +35,7 @@ private slots:
     void onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error);
     void onStartedEncryptionHandshake(QSslSocket *socket);
 private:
-    QTimer m_cleanupTimer;
+    QTimer m_cleanupTimer; // Нужно ли
     QSslServer* m_sslServer;
     SessionManager* m_sessionManager;
     QSet<QPointer<QSslSocket>> m_activeSockets;

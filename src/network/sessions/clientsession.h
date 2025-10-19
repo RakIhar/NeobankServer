@@ -8,7 +8,7 @@
 #include <QSslSocket>
 #include <QTcpSocket>
 #include <QTimer>
-#include "../../common/constants.h"
+// #include "../../common/types.h"
 #include "../../security/authentification/authmanager.h"
 
 //Отвечает за жизненный цикл сессий.
@@ -36,17 +36,25 @@
 
 //С клиентом сессия связывается по SSL, с БД сессия связывается по SessionID
 
+//Протоколы будут JSON
+
 class ClientSession : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientSession(QSslSocket* socket, QObject *parent = nullptr);
+    explicit ClientSession(QSslSocket* socket, AuthManager* authManager, QObject *parent = nullptr);
 private:
     QSslSocket* m_socket;
+    AuthManager* m_authManager;
     QTimer m_timer;
+
     void sendData(const QByteArray &data);
     void processIncomingData(const QByteArray &data);
+
     void extendLifetime();
+
+    AuthContext m_authContext;
+    bool m_isAuthenticated = false;
 
 private slots:
     void onErrorOccurred(QAbstractSocket::SocketError socketError);

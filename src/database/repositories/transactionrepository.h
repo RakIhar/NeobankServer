@@ -1,15 +1,21 @@
 #ifndef TRANSACTIONREPOSITORY_H
 #define TRANSACTIONREPOSITORY_H
 
-#include <QObject>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include "../models/transaction.h"
 
-class TransactionRepository : public QObject
+class TransactionRepository
 {
-    Q_OBJECT
 public:
-    explicit TransactionRepository(QObject *parent = nullptr);
+    explicit TransactionRepository(QSqlDatabase db);
 
-signals:
+    bool addTransaction(const Transaction &t);
+    QList<Transaction> getByAccount(int accountId);
+
+private:
+    QSqlDatabase m_db;
 };
 
 #endif // TRANSACTIONREPOSITORY_H

@@ -1,15 +1,14 @@
 #ifndef USER_H
 #define USER_H
 
-#include <QObject>
+#include <QString>
 
-class User : public QObject
+struct User
 {
-    Q_OBJECT
-public:
-    explicit User(QObject *parent = nullptr);
-
-signals:
+    int id = 0;
+    QString username;
+    QString passwordHash;
+    QString email;
 };
 
 #endif // USER_H

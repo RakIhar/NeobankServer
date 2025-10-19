@@ -1,15 +1,15 @@
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
 
-#include <QObject>
+#include <QString>
+#include <QDateTime>
 
-class Transaction : public QObject
+struct Transaction
 {
-    Q_OBJECT
-public:
-    explicit Transaction(QObject *parent = nullptr);
-
-signals:
+    int id = 0;
+    int accountId = 0;
+    double amount = 0.0;
+    QString type;
+    QDateTime timestamp;
 };
-
 #endif // TRANSACTION_H

@@ -4,21 +4,22 @@ SessionManager::SessionManager(QObject *parent) : QObject(parent){}
 
 ClientSession *SessionManager::createUnauthenticatedSession(QSslSocket *socket)
 {
-    auto* session = new ClientSession(socket, this);
+    auto* session = new ClientSession(socket, m_authManager, this);
 
     connect(session, &ClientSession::closed,
             this, &SessionManager::onSessionClosed);
     connect(session, &ClientSession::authenticated,
             this, &SessionManager::onSessionAuthenticated);
 
+    qDebug() << "createUnauthenticatedSession m_authenticatedSessions: " << m_authenticatedSessions.count(); //DEBUG
+
     return session;
 }
 
-// ClientSession *SessionManager::findBySessionId(const QByteArray &sessionId) const //доделать
-// {
-
-// }
-
+ClientSession *SessionManager::findBySessionId(const QByteArray &sessionId) const
+{
+    return m_authenticatedSessions.find(sessionId).value();
+}
 
 void SessionManager::onSessionClosed(ClientSession *session) //переделать
 {
