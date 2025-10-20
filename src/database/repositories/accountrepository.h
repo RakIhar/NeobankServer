@@ -14,7 +14,7 @@ public:
     bool create(const Account &account);
     Account getById(int id);
     bool updateBalance(int id, double newBalance);
-
+    // bool authUser();
 private:
     QSqlDatabase m_db;
 };

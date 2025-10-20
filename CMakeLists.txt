@@ -15,10 +15,10 @@ find_package(PostgreSQL REQUIRED)
 set(SOURCES
   src/main.cpp
 
-  src/network/protocols/bankingprotocol.h
-  src/network/protocols/bankingprotocol.cpp
-  src/network/protocols/messageparser.h
-  src/network/protocols/messageparser.cpp
+
+
+
+
   src/network/sessions/sessionmanager.h
   src/network/sessions/sessionmanager.cpp
   src/network/sessions/clientsession.h
@@ -63,23 +63,19 @@ set(SOURCES
   src/common/utils.h
   src/common/utils.cpp
 
-  src/database/dbconnection.h
-  src/database/dbconnection.cpp
   src/database/dbmanager.h
   src/database/dbmanager.cpp
   src/database/models/account.h
-  src/database/models/account.cpp
   src/database/models/transaction.h
-  src/database/models/transaction.cpp
   src/database/models/user.h
-  src/database/models/user.cpp
   src/database/repositories/accountrepository.h
   src/database/repositories/accountrepository.cpp
   src/database/repositories/transactionrepository.h
   src/database/repositories/transactionrepository.cpp
 )
 
-add_executable(NeobankServer ${SOURCES})
+add_executable(NeobankServer ${SOURCES}
+  src/network/protocols/protocolvalidator.h src/network/protocols/protocolvalidator.cpp)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 

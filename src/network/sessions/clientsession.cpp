@@ -1,6 +1,11 @@
 #include "clientsession.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QVariantMap>
+#include "../protocols/protocolvalidator.h"
 
-ClientSession::ClientSession(QSslSocket* socket, AuthManager* authManager, QObject *parent) : QObject(parent), m_authManager(authManager)
+ClientSession::ClientSession(QSslSocket* socket, AuthManager* authManager, QObject *parent)
+    : QObject(parent), m_authManager(authManager)
 {
     m_socket = socket;
     m_socket->setParent(this);
@@ -13,7 +18,7 @@ ClientSession::ClientSession(QSslSocket* socket, AuthManager* authManager, QObje
     connect(m_socket, &QSslSocket::errorOccurred,
             this, &ClientSession::onErrorOccurred);
 
-    constexpr int TEN_MINUTES = 600000;
+    constexpr int TEN_MINUTES = 600000; //TODO: improve or delete timer
     m_timer.setInterval(TEN_MINUTES);
     m_timer.setSingleShot(true);
 
@@ -21,96 +26,63 @@ ClientSession::ClientSession(QSslSocket* socket, AuthManager* authManager, QObje
         this->m_socket->disconnectFromHost();
     });
     m_timer.start();
-
-    // DEBUG
-    /*
-    connect(m_socket, &QSslSocket::disconnected,
-            [this]{qDebug() << "m_socket disconnected";});
-    connect(m_socket, &QSslSocket::destroyed,
-            [this]{qDebug() << "m_socket destroyed";});
-    connect(m_socket, &QSslSocket::aboutToClose,
-            [this]{qDebug() << "m_socket aboutToClose";});
-    connect(m_socket, &QSslSocket::readyRead,
-            [this]{qDebug() << "m_socket readyRead";});
-    // connect(m_socket, &ClientSession::authenticated,
-            // [this](){qDebug() << "m_socket authenticated";});
-    // connect(m_socket, &ClientSession::closed,
-            // [this](){qDebug() << "m_socket closed";});
-    connect(m_socket, &ClientSession::destroyed,
-            [this](){qDebug() << "session destroyed";});
-    */
 }
 
-void ClientSession::sendData(const QByteArray &data)
+void ClientSession::sendData(const QByteArray &msg)
 {
-    qDebug() << "ClientSession::sendData";  //DEBUG
-    qDebug() << data;                       //DEBUG
-
-    if (!m_socket) return;
-
-    m_socket->write(data);
-    m_socket->flush(); // TLS сразу шифрует и отправляет
-
-    emit authenticated("123123", this);
+    quint32 msgSize = msg.size();
+    QByteArray packet;
+    packet.resize(sizeof(quint32) + msgSize);
+    qToBigEndian(msgSize, packet.data());
+    memcpy(packet.data() + 4, msg.constData(), msgSize);
+    m_socket->write(packet);
+    m_socket->flush();
 }
 
-void ClientSession::processIncomingData(const QByteArray &data)
+void ClientSession::onReadyRead()
 {
-    if (m_authContext.state == AuthState::Completed)
+    m_buffer.append(m_socket->readAll());
+    if (m_buffer.size() >= sizeof(quint32))
     {
-        // qDebug() << "ClientSession::processIncomingData";   //DEBUG
-        qDebug() << data;                                   //DEBUG
-        sendData("Server Hello");                           //DEBUG
-    }
-    else
-    {
-        m_authManager->processStep(m_authContext, data);
-        if (m_authContext.state == AuthState::Completed)
+        quint32 msgSize;
+        memcpy(&msgSize, m_buffer.constData(), sizeof(quint32));
+        msgSize = qFromBigEndian(msgSize);
+
+        if (m_buffer.size() >= sizeof(quint32) + msgSize)
         {
-            qDebug() << "authenticated";
-            QByteArray sessionId;
-            emit authenticated(sessionId, this);
-        }
-        if (m_authContext.state == AuthState::Failed)
-        {
-            qDebug() << "failed";
-        }
-        if (m_authContext.state == AuthState::InProgress)
-        {
-            qDebug() << "in progress";
+            QByteArray msg = m_buffer.mid(sizeof(quint32), msgSize);
+            m_buffer.remove(0, sizeof(quint32) + msgSize);
+            processIncomingMessage(msg);
         }
     }
 }
 
-void ClientSession::extendLifetime()
+void ClientSession::extendLifetime() //TODO: improve session lifetime
 {
     constexpr int TEN_MINUTES = 600000;
     m_timer.setInterval(TEN_MINUTES);
 }
 
-void ClientSession::onReadyRead()
+void ClientSession::processIncomingMessage(const QByteArray &msg) //TODO: IMPELEMENT
 {
-    if (!m_socket) return;
-
-    while (m_socket->bytesAvailable() > 0) {
-        QByteArray data = m_socket->readAll();
-        processIncomingData(data);
+    QJsonDocument doc;
+    if (ProtocolValidator::validateMessage(msg, doc))
+    {
+        qDebug() << "Received: " << doc.toJson();
     }
 }
 
-//===================================================================//
-
-void ClientSession::onErrorOccurred(QAbstractSocket::SocketError socketError)
+void ClientSession::onErrorOccurred(QAbstractSocket::SocketError socketError) //TODO: implement
 {
     emit closed(this);
 }
 
-void ClientSession::onSocketDisconnected()
+void ClientSession::onSocketDisconnected() //TODO: implement
 {
     emit closed(this);
 }
 
-void ClientSession::onSocketDestroyed()
+void ClientSession::onSocketDestroyed() //TODO: implement
 {
     emit closed(this);
 }

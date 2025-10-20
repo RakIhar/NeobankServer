@@ -44,4 +44,19 @@ enum class ProtocolType
 
 };
 
+enum class JsonField
+{
+    UserId,
+    Username,
+    PasswordHash,
+    Email,
+    AccountId,
+    Balance,
+    Currency,
+    TransactionId,
+    Amount,
+    Type,
+    Timestamp
+};
+
 #endif // CONSTANTS_H

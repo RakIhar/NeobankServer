@@ -11,9 +11,8 @@
 #include <QSslSocket>
 #include <QtGlobal>
 
-// Отвечает за прослушивание порта, создание сокета и handshake.
-// Обрабатывает только TLS‑ошибки и encrypted.
-// Условно главный объект приложения
+// Прослушивает порт, обрабатывает handshake,
+// передаёт зашифрованные сокеты в SessionManager
 
 inline size_t qHash(const QPointer<QSslSocket> &ptr, size_t seed = 0) noexcept
 {

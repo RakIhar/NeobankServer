@@ -17,18 +17,6 @@ SslServerManager::SslServerManager(QObject *parent)
     connect(m_sslServer, &QSslServer::startedEncryptionHandshake,
             this, &SslServerManager::onStartedEncryptionHandshake);
 
-    //DEBUG//
-    connect(m_sslServer, &QSslServer::newConnection,
-            [this]{qDebug() << "newConnection";});
-    connect(m_sslServer, &QSslServer::peerVerifyError,
-            [this]{qDebug() << "peerVerifyError";});
-    connect(m_sslServer, &QSslServer::handshakeInterruptedOnError,
-            [this]{qDebug() << "handshakeInterruptedOnError";});
-    connect(m_sslServer, &QSslServer::acceptError,
-            [this]{qDebug() << "acceptError";});
-    connect(m_sslServer, &QSslServer::startedEncryptionHandshake,
-            [this]{qDebug() << "startedEncryptionHandshake";});
-
     initializeServerConfig();
 
     constexpr int ONE_MINUTE = 60000;
@@ -38,7 +26,7 @@ SslServerManager::SslServerManager(QObject *parent)
     m_cleanupTimer.start();
 }
 
-void SslServerManager::initializeServerConfig()
+void SslServerManager::initializeServerConfig() //TODO: implement certificates + configuration
 {
     QFile certFile("../../certificates/server.crt");
     QFile keyFile("../../certificates/server.key");
@@ -62,32 +50,27 @@ void SslServerManager::initializeServerConfig()
                               QSslCipher("TLS_CHACHA20_POLY1305_SHA256")};
 
     sslConfig.setCiphers(ciphers);
-    // sslConfig.setHandshakeMustInterruptOnError(false);
     m_sslServer->setSslConfiguration(sslConfig);
 }
 
-//===========================================================================//
-
 void SslServerManager::startServer()
 {
-    if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //настроить сами порты и прочее
+    if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //TODO: improve
         qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
     } else {
         qInfo() << "TLS 1.3 сервер слушает на порту 4433";
     }
 }
 
-void SslServerManager::stopServer()
+void SslServerManager::stopServer() //TODO: IMPLEMENT
 {
     m_sslServer->close();
 }
 
-void SslServerManager::disconnectAll()
+void SslServerManager::disconnectAll() //TODO: IMPLEMENT
 {
 
 }
-
-//===========================================================================//
 
 void SslServerManager::onStartedEncryptionHandshake(QSslSocket *socket)
 {
@@ -107,7 +90,7 @@ void SslServerManager::onEncryptedReady()
     m_activeSockets.remove(ssl);
 }
 
-void SslServerManager::cleanupDeadSockets()
+void SslServerManager::cleanupDeadSockets() //TODO: remove or improve
 {
     auto it = m_activeSockets.begin();
     while (it != m_activeSockets.end())
@@ -123,9 +106,7 @@ void SslServerManager::cleanupDeadSockets()
     }
 }
 
-//===========================================================================//
-
-void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors)
+void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors) //TODO: IMPLEMENT
 {
     bool isThereCriticalError = false;
     for (const auto &e : errors)
@@ -144,11 +125,11 @@ void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &e
             break;
         }
 
-        qWarning() << "SSL error: " << e.errorString();
+        // qWarning() << "SSL error: " << e.errorString();
     }
     if (isThereCriticalError)
     {
-        qWarning() << "Критическая SSL ошибка — соединение разорвано";
+        // qWarning() << "Критическая SSL ошибка — соединение разорвано";
         socket->abort();
     }
     else
@@ -157,8 +138,8 @@ void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &e
     }
 }
 
-void SslServerManager::onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error)
+void SslServerManager::onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error) //TODO: IMPLEMENT
 {
-    qWarning() << "Error occurred: " << error
-               << (socket ? socket->peerAddress().toString() : "unknown peer");
+    // qWarning() << "Error occurred: " << error
+    //            << (socket ? socket->peerAddress().toString() : "unknown peer");
 }
