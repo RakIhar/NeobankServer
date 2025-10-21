@@ -7,7 +7,7 @@
 SslServerManager::SslServerManager(QObject *parent)
     : QObject(parent)
 {
-    m_sessionManager = new SessionManager(this);
+    m_sessionManager = SessionManager::instance();
     m_sslServer = new QSslServer(this);
 
     connect(m_sslServer, &QSslServer::errorOccurred,
@@ -55,10 +55,11 @@ void SslServerManager::initializeServerConfig() //TODO: implement certificates +
 
 void SslServerManager::startServer()
 {
-    if (!m_sslServer->listen(QHostAddress::Any, 4433)) { //TODO: improve
+    constexpr quint16 PORT = 4433;
+    if (!m_sslServer->listen(QHostAddress::Any, PORT)) { //TODO: improve
         qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
     } else {
-        qInfo() << "TLS 1.3 сервер слушает на порту 4433";
+        qInfo() << QString("TLS 1.3 сервер слушает на порту %1").arg(PORT);
     }
 }
 
@@ -86,7 +87,7 @@ void SslServerManager::onEncryptedReady()
     if (!ssl)
         return;
 
-    m_sessionManager->createUnauthenticatedSession(ssl);
+    m_sessionManager->CreateSocketSession(ssl);
     m_activeSockets.remove(ssl);
 }
 
@@ -125,11 +126,11 @@ void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &e
             break;
         }
 
-        // qWarning() << "SSL error: " << e.errorString();
+        qWarning() << "SSL error: " << e.errorString();
     }
     if (isThereCriticalError)
     {
-        // qWarning() << "Критическая SSL ошибка — соединение разорвано";
+        qWarning() << "Критическая SSL ошибка — соединение разорвано";
         socket->abort();
     }
     else
@@ -140,6 +141,6 @@ void SslServerManager::onSslErrors(QSslSocket *socket, const QList<QSslError> &e
 
 void SslServerManager::onErrorOccurred(QSslSocket *socket, QAbstractSocket::SocketError error) //TODO: IMPLEMENT
 {
-    // qWarning() << "Error occurred: " << error
-    //            << (socket ? socket->peerAddress().toString() : "unknown peer");
+    qWarning() << "Error occurred: " << error
+               << (socket ? socket->peerAddress().toString() : "unknown peer");
 }

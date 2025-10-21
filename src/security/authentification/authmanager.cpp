@@ -1,9 +1,11 @@
 #include "authmanager.h"
 
-AuthManager::AuthManager(QObject *parent)
-    : QObject{parent}
-{
+AuthManager::AuthManager(QObject *parent) : QObject{parent} {}
 
+AuthManager *AuthManager::instance()
+{
+    static AuthManager inst;
+    return &inst;
 }
 
 AuthStatus AuthManager::processStep(AuthContext &ctx, const QByteArray &message)

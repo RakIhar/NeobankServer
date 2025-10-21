@@ -1,9 +1,14 @@
 #include "dbmanager.h"
 
+DataBaseManager *DataBaseManager::instance()
+{
+    static DataBaseManager inst;
+    return &inst;
+}
+
 DataBaseManager::DataBaseManager(QObject *parent)
     : QObject{parent}
 {
-
     m_postgresql = QSqlDatabase::addDatabase("QPSQL");
     m_postgresql.setHostName("localhost");
     m_postgresql.setPort(5432);

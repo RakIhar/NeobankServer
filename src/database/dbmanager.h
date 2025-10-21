@@ -10,9 +10,12 @@ class DataBaseManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit DataBaseManager(QObject *parent = nullptr);
+    static DataBaseManager* instance();
 private:
     QSqlDatabase m_postgresql;
+    explicit DataBaseManager(QObject *parent = nullptr);
+    DataBaseManager(const DataBaseManager&) = delete;
+    DataBaseManager& operator=(const DataBaseManager&) = delete;
 signals:
 };
 

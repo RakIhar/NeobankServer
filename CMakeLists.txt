@@ -21,8 +21,8 @@ set(SOURCES
 
   src/network/sessions/sessionmanager.h
   src/network/sessions/sessionmanager.cpp
-  src/network/sessions/clientsession.h
-  src/network/sessions/clientsession.cpp
+  src/network/sessions/socketsession.h
+  src/network/sessions/socketsession.cpp
   src/network/sslservermanager.h
   src/network/sslservermanager.cpp
 

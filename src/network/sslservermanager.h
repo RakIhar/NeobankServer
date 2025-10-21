@@ -4,15 +4,20 @@
 #include <QObject>
 #include <QSslServer>
 #include <QSsl>
-#include "sessions/sessionmanager.h"
 #include <QSslSocket>
-
 #include <QPointer>
 #include <QSslSocket>
 #include <QtGlobal>
 
+#include "sessions/sessionmanager.h"
+#include "../database/dbmanager.h"
+#include "../security/authentification/authmanager.h"
+
 // Прослушивает порт, обрабатывает handshake,
 // передаёт зашифрованные сокеты в SessionManager
+// создаёт и хранит все singleton-мененджеры
+
+//Надо переделать, но потом - сейчас всё работает хорошо
 
 inline size_t qHash(const QPointer<QSslSocket> &ptr, size_t seed = 0) noexcept
 {
@@ -26,6 +31,11 @@ public:
     explicit SslServerManager(QObject *parent = nullptr);
     void startServer();
     void stopServer();
+
+    SessionManager* m_sessionManager;
+    DataBaseManager* m_dbManager;
+    AuthManager* m_authManager;
+
 private slots:
     void onEncryptedReady();
     void cleanupDeadSockets();
@@ -36,7 +46,7 @@ private slots:
 private:
     QTimer m_cleanupTimer; // Нужно ли
     QSslServer* m_sslServer;
-    SessionManager* m_sessionManager;
+
     QSet<QPointer<QSslSocket>> m_activeSockets;
 
     void initializeServerConfig();

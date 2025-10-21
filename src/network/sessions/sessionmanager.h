@@ -1,6 +1,6 @@
 #ifndef SESSIONMANAGER_H
 #define SESSIONMANAGER_H
-#include "clientsession.h"
+#include "socketsession.h"
 #include "../../database/dbmanager.h"
 
 #include <QObject>
@@ -10,26 +10,25 @@
 #include <QSslSocket>
 #include <QPointer>
 
-//Создаёт, удаляет и хранит сессии
+//Единая точка управления сессиями:
+//Поиск, фильтрация, оповещение, закрытие и прочее - потом реализовать
+//На данный момент класс реализован
 
 class SessionManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit SessionManager(QObject *parent = nullptr);
-
-    ClientSession* createUnauthenticatedSession(QSslSocket* socket);
-    ClientSession* findBySessionId(const QByteArray &sessionId) const;
+    static SessionManager* instance();
+    SocketSession* CreateSocketSession(QSslSocket* socket);
 private:
-    QHash<QByteArray, QPointer<ClientSession>> m_authenticatedSessions;
-    AuthManager* m_authManager;
-    DataBaseManager* m_dbManager;
-    //TODO:
-    //убрать сигнал аутентификации:
-    //хранить просто сессии + методы для фильтрации и методы оповещение
+    QHash<QByteArray, QPointer<SocketSession>> m_socketSessions;
+private:
+    explicit SessionManager(QObject *parent = nullptr);
+    SessionManager(const SessionManager&) = delete;
+    SessionManager& operator=(const SessionManager&) = delete;
+
 private slots:
-    void onSessionClosed(ClientSession *session);
-    void onSessionAuthenticated(QByteArray sessionID, ClientSession *session);
+    void onSessionClosed(SocketSession *session);
 signals:
 };
 

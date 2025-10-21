@@ -5,6 +5,8 @@
 #include <QSslSocket>
 #include <QString>
 
+//Сделать фабрику
+
 enum class AuthState {
     None,        // ещё не начинали
     InProgress,  // идёт процесс (может быть OTP)
@@ -29,11 +31,15 @@ class AuthManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit AuthManager(QObject *parent = nullptr);
+    static AuthManager* instance();
 
     AuthStatus processStep(AuthContext &ctx, const QByteArray &message);
 
 private:
+    explicit AuthManager(QObject *parent = nullptr);
+    AuthManager(const AuthManager&) = delete;
+    AuthManager& operator=(const AuthManager&) = delete;
+
     bool verifyCredentials(const QByteArray &login, const QByteArray &password);
     bool isOtpRequired(const QByteArray &login);
     bool verifyOtp(const QByteArray &login, const QByteArray &otp);
