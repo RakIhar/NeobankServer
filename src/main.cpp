@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include <QTimer>
-#include "network/sslservermanager.h"
+#include "network/transportlayer.h"
+#include "context/contextwrapper.h"
+#include <QObject>
 
 int main(int argc, char *argv[])
 {
@@ -8,7 +10,16 @@ int main(int argc, char *argv[])
     a.setApplicationName("NeobankServer");
     a.setOrganizationName("R.I.Inc.");
     a.setApplicationVersion("1.0");
-    SslServerManager server;
-    QTimer::singleShot(0, &server, &SslServerManager::startServer);
+
+    TransportLayer host;
+    ContextWrapper wrapper;
+
+    QObject::connect(&host, &TransportLayer::messageReceived,
+                     &wrapper, &ContextWrapper::onCreateContext);
+
+    QObject::connect(&wrapper, &ContextWrapper::contextReduced,
+                     &host, &TransportLayer::onSendMessage);
+
+    QTimer::singleShot(0, &host, &TransportLayer::start);
     return a.exec();
 }

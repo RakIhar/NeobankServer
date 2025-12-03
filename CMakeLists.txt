@@ -10,6 +10,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 COMPONENTS Core Network Sql REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
@@ -19,67 +28,98 @@ set(SOURCES
 
 
 
-  src/network/sessions/sessionmanager.h
-  src/network/sessions/sessionmanager.cpp
-  src/network/sessions/socketsession.h
-  src/network/sessions/socketsession.cpp
-  src/network/sslservermanager.h
-  src/network/sslservermanager.cpp
 
-  src/security/audit/auditlogger.h
-  src/security/audit/auditlogger.cpp
-  src/security/audit/auditor.h
-  src/security/audit/auditor.cpp
-  src/security/authentification/authmanager.h
-  src/security/authentification/authmanager.cpp
-  src/security/authentification/loginmanager.h
-  src/security/authentification/loginmanager.cpp
-  src/security/authentification/passwordresetmanager.h
-  src/security/authentification/passwordresetmanager.cpp
-  src/security/authentification/registermanager.h
-  src/security/authentification/registermanager.cpp
-  src/security/certificates/certificatemanager.h
-  src/security/certificates/certificatemanager.cpp
-  src/security/ddos/ddosmanager.h
-  src/security/ddos/ddosmanager.cpp
-  src/security/encryption/aesencryptor.h
-  src/security/encryption/aesencryptor.cpp
-  src/security/encryption/hashing.h
-  src/security/encryption/hashing.cpp
+  src/network/transportlayer.h
+  src/network/transportlayer.cpp
 
-  src/business/services/accountservice.h
-  src/business/services/accountservice.cpp
-  src/business/services/transactionservice.h
-  src/business/services/transactionservice.cpp
-  src/business/services/reportservice.h
-  src/business/services/reportservice.cpp
-  src/business/processors/transactionprocessor.h
-  src/business/processors/transactionprocessor.cpp
-  src/business/processors/paymentprocessor.h
-  src/business/processors/paymentprocessor.cpp
 
-  src/common/types.h
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   src/common/constants.h
-  src/common/utils.h
-  src/common/utils.cpp
+
+
 
   src/database/dbmanager.h
   src/database/dbmanager.cpp
   src/database/models/account.h
   src/database/models/transaction.h
   src/database/models/user.h
+  src/database/models/authsession.h
+  src/database/models/auditlogentry.h
   src/database/repositories/accountrepository.h
   src/database/repositories/accountrepository.cpp
   src/database/repositories/transactionrepository.h
   src/database/repositories/transactionrepository.cpp
+  src/database/repositories/userrepository.h
+  src/database/repositories/userrepository.cpp
+  src/database/repositories/authsessionrepository.h
+  src/database/repositories/authsessionrepository.cpp
+  src/database/repositories/auditlogrepository.h
+  src/database/repositories/auditlogrepository.cpp
 )
 
 add_executable(NeobankServer ${SOURCES}
-  src/network/protocols/protocolvalidator.h src/network/protocols/protocolvalidator.cpp)
+
+
+
+  src/network/socketwrapper.h src/network/socketwrapper.cpp
+  src/network/sessionmanager.h src/network/sessionmanager.cpp
+
+
+
+  src/context/contextwrapper.h src/context/contextwrapper.cpp
+  src/context/messagecontext.h
+
+  src/context/user.h src/context/user.cpp
+  src/context/session.h src/context/session.cpp
+  src/context/messagecontext.h src/context/messagecontext.cpp
+  src/pipeline/pipeline.h src/pipeline/pipeline.cpp
+
+
+)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 
 target_link_libraries(NeobankServer PRIVATE Qt6::Core Qt::Network Qt6::Sql PostgreSQL::PostgreSQL)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS NeobankServer
