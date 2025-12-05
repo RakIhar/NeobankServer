@@ -11,11 +11,11 @@ public:
     explicit ContextWrapper(QObject *parent = nullptr);
 
 signals:
-    void contextCreated(MessageContext* msgCtx);
+    void contextCreated(MessageContext &msgCtx);
     void contextReduced(const QUuid &connection, const QByteArray &rawData);
 public slots:
     void onCreateContext(const QUuid &connection, const QByteArray &rawData);
-    void onReduceContext(MessageContext* msgCtx);
+    void onReduceContext(MessageContext &msgCtx);
 };
 
 #endif // CONTEXTWRAPPER_H

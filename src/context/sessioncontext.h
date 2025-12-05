@@ -1,11 +1,11 @@
-#ifndef SESSION_H
-#define SESSION_H
+#ifndef SESSIONCONTEXT_H
+#define SESSIONCONTEXT_H
 
 // ISession (Id, IsAvailable, Data) - хранение данных между запросами, потому что MessageContext лишь на один запрос
-class Session
+class SessionContext
 {
 public:
-    Session();
+    SessionContext();
 };
 
-#endif // SESSION_H
+#endif // SESSIONCONTEXT_H

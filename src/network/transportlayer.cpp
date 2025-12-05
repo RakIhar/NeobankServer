@@ -98,7 +98,7 @@ void TransportLayer::onStartedEncryptionHandshake(QSslSocket *socket)
 
 void TransportLayer::onEncryptedReady()
 {
-    qDebug() << "подключено";
+    qDebug() << "Подключено";
     QSslSocket *ssl = qobject_cast<QSslSocket*>(sender());
     if (!ssl)
         return;

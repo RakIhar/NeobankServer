@@ -12,17 +12,16 @@ void ContextWrapper::onCreateContext(const QUuid &connection, const QByteArray &
         if (doc.isObject())
         {
             QJsonObject obj = doc.object();
-            MessageContext* ctx = new MessageContext();
-            ctx->jsonRequest = obj;
-            ctx->requestId = QUuid::createUuid();
-            ctx->connection = connection;
+            MessageContext ctx;
+            ctx.jsonRequest = obj;
+            ctx.requestId = QUuid::createUuid();
+            ctx.connection = connection;
             emit contextCreated(ctx);
         }
     }
-
 }
 
-void ContextWrapper::onReduceContext(MessageContext *msgCtx)
+void ContextWrapper::onReduceContext(MessageContext &msgCtx)
 {
-    emit contextReduced(msgCtx->connection, QJsonDocument(msgCtx->jsonRequest).toJson());
+    emit contextReduced(msgCtx.connection, QJsonDocument(msgCtx.jsonResponce).toJson(QJsonDocument::JsonFormat::Compact));
 }
