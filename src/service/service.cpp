@@ -55,7 +55,7 @@ T *ServiceProvider::getSingleton()
 }
 
 template<typename TService>
-void ServiceCollection::addService(ServiceType type)
+void ServiceProvider::addService(ServiceType type)
 {
     static_assert(std::is_base_of_v<IService, TService>, "TService must derive from IService");
     static_assert(std::is_default_constructible_v<TService>, "Service must have default constructor");
@@ -64,11 +64,11 @@ void ServiceCollection::addService(ServiceType type)
         // return std::unique_ptr<IService>(static_cast<IService*>(new TImpl()));
         return std::make_unique<TService>();
     };
-    services[typeid(TService).hash_code()] = ServiceDescriptor{ type, f };
+    registry[typeid(TService).hash_code()] = ServiceDescriptor{ type, f };
 }
 
 template<typename TService, typename TImpl>
-void ServiceCollection::addService(ServiceType type)
+void ServiceProvider::addService(ServiceType type)
 {
     static_assert(std::is_base_of_v<TService, TImpl>, "TImpl must derive from TService");
     static_assert(std::is_base_of_v<IService, TService>, "TService must derive from IService");
@@ -80,5 +80,19 @@ void ServiceCollection::addService(ServiceType type)
     };
     //RVO: компилятор создает unique_ptr в месте назначение, без копирования
     //или move если не rvo, крч кресты пиздец всратое говно
-    services[typeid(TService).hash_code()] = ServiceDescriptor{ type, f };
+    registry[typeid(TService).hash_code()] = ServiceDescriptor{ type, f };
+}
+
+template<typename T>
+ServiceType ServiceScope::getServiceType()
+{
+    return root->getServiceType<T>();
+}
+
+template<typename T>
+ServiceType ServiceProvider::getServiceType()
+{
+    size_t key = typeid(T).hash_code();
+    ServiceDescriptor& descriptor = registry.at(key);
+    return descriptor.type;
 }

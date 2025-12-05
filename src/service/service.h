@@ -27,26 +27,22 @@ struct ServiceDescriptor
     Factory factory;
 };
 
-class ServiceCollection
+class ServiceProvider
 {
 public:
+    explicit ServiceProvider() {}
+
     template<typename TService, typename TImpl>
     void addService(ServiceType type);
 
     template<typename TService>
     void addService(ServiceType type);
 
-    std::unordered_map<size_t, ServiceDescriptor> services;
-};
-
-class ServiceProvider
-{
-public:
-    explicit ServiceProvider(std::unordered_map<size_t, ServiceDescriptor> registry)
-        : registry(std::move(registry)) {}
-
     template<typename T>
     T* getSingleton();
+
+    template<typename T>
+    ServiceType getServiceType();
 
     std::unordered_map<size_t, ServiceDescriptor> registry;
     std::unordered_map<size_t, std::unique_ptr<IService>> singletons;
@@ -60,6 +56,9 @@ public:
 
     template<typename T>
     T* get();
+
+    template<typename T>
+    ServiceType getServiceType();
 
     template<typename T>
     std::unique_ptr<T> getTransient();

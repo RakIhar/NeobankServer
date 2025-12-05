@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "network/transportlayer.h"
-#include "context/contextwrapper.h"
+// #include "context/contextwrapper.h"
 #include "pipeline/pipelinebuilder.h"
 
 class Application : public QObject
@@ -14,23 +14,35 @@ public:
     void start();
     void stop();
 
-    void build();//построить делегат, настроить m_serviceProvider, подключить сигналы/слоты
-
-    void useEndpoint(IEndpoint);//тоже синглтон, потому что мне лень писать крутой код
-    void useMiddleware(IMiddleware);//синглтон, поэтому без возни с шаблонами
+    void build(RequestDelegate endpoint)//построить делегат, подключить сигналы/слоты
+    {
+        m_requestDelegate = m_pipelineBuilder.build(endpoint);
+    }
+    void useEndpoint(QString name, QSharedPointer<IEndpoint> e)//тоже синглтон, потому что мне лень писать крутой код
+    {
+        m_endpoints.registerEndpoint(name, e);//заменить на std_shared_ptr, обдумать указатели в контексте
+    }
+    void useMiddleware(std::unique_ptr<IMiddleware> m)//синглтон, поэтому без возни с шаблонами
+    {
+        m_pipelineBuilder.addMiddleware(std::move(m));
+    }
     template<typename TService, typename TImpl>
-    void useService(ServiceType type);
+    void useService(ServiceType type)
+    {
+        m_serviceProvider.addService<TService, TImpl>(type);
+    }
     template<typename TService>
-    void useService(ServiceType type);
+    void useService(ServiceType type)
+    {
+        m_serviceProvider.addService<TService>(type);
+    }
 private:
+    //host->wrapper->delegate->wrapper->delegate
     TransportLayer m_host;
-    ContextWrapper m_wrapper;
+    RequestDelegate m_requestDelegate; //результат работы билдера конвейера
     PipeLineBuilder m_pipelineBuilder; //middleware хранятся здесь
-    EndpointRegistry m_endpoints; //передадутся в contextWrapper
-    RequestDelegate requestDelegate;
-
-    ServiceCollection m_serviceCollection; //хранит сервисы
-    ServiceProvider m_serviceProvider; //забирает сервисы у serviceCollection, это root, который передается в ServiceScoped
+    EndpointRegistry m_endpoints; //передаются в contextWrapper
+    ServiceProvider m_serviceProvider; //это root, который передается в конструктор ServiceScoped, который передаётся в contextWrapper
 signals:
 };
 

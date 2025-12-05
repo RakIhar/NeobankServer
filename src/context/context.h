@@ -11,7 +11,7 @@ class IEndpoint {
 public:
     virtual ~IEndpoint() = default;
 
-    virtual void invoke(MessageContext& ctx) = 0;
+    virtual void invoke(MessageContext& ctx);
 };
 
 class EndpointRegistry

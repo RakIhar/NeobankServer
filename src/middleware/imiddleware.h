@@ -9,7 +9,7 @@ class IMiddleware {
 public:
     virtual ~IMiddleware() = default;
 
-    virtual void invoke(MessageContext& ctx, const RequestDelegate& next) = 0;
+    virtual void invoke(MessageContext& ctx, const RequestDelegate& next);
 };
 
 //using MiddlewareFactory = std::function<std::unique_ptr<IMiddleware>()>; //указатели на контруктор без параметров
