@@ -2,7 +2,7 @@
 #include <QTimer>
 #include "network/transportlayer.h"
 #include "context/contextwrapper.h"
-#include "pipeline/pipeline.h"
+#include "pipeline/pipelinebuilder.h"
 #include <QObject>
 #include "middleware/authentification.h"
 #include "middleware/authorization.h"
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     QObject::connect(&wrapper, &ContextWrapper::contextReduced,
                      &host, &TransportLayer::onSendMessage);
 
-    PipeLine pipeline;
+    PipeLineBuilder pipeline;
     pipeline.use([]{ return std::make_unique<Authentification>(); });
     pipeline.use([]{ return std::make_unique<Authorization>(); });
     // pipeline.use([&]{ return std::make_unique<Router>(&endpoints); });
@@ -41,8 +41,8 @@ int main(int argc, char *argv[])
     pipeline.build(terminal);
 
     QObject::connect(&wrapper, &ContextWrapper::contextCreated,
-                     &pipeline, &PipeLine::onRequest);
-    QObject::connect(&pipeline, &PipeLine::answer,
+                     &pipeline, &PipeLineBuilder::onRequest);
+    QObject::connect(&pipeline, &PipeLineBuilder::answer,
                      &wrapper, &ContextWrapper::onReduceContext);
 
     QTimer::singleShot(0, &host, &TransportLayer::start);

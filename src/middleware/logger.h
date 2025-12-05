@@ -2,7 +2,7 @@
 #define LOGGER_H
 
 #include <QObject>
-#include "../pipeline/middleware.h"
+#include "imiddleware.h"
 
 class Logger : public QObject, public IMiddleware
 {

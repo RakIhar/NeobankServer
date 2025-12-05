@@ -25,6 +25,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Core)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
@@ -104,19 +105,24 @@ add_executable(NeobankServer ${SOURCES}
 
 
   src/context/contextwrapper.h src/context/contextwrapper.cpp
-  src/context/messagecontext.h
+  src/context/context.h
 
   src/context/user.h src/context/user.cpp
   src/context/sessioncontext.h src/context/sessioncontext.cpp
-  src/context/messagecontext.h src/context/messagecontext.cpp
-  src/pipeline/pipeline.h src/pipeline/pipeline.cpp
-  src/pipeline/middleware.h
+  src/context/context.h src/context/context.cpp
+  src/pipeline/pipelinebuilder.h src/pipeline/pipelinebuilder.cpp
+
   src/middleware/router.h src/middleware/router.cpp
   src/middleware/authentification.h src/middleware/authentification.cpp
   src/middleware/authorization.h src/middleware/authorization.cpp
   src/middleware/endpointinvoker.h src/middleware/endpointinvoker.cpp
   src/middleware/logger.h src/middleware/logger.cpp
   src/middleware/session.h src/middleware/session.cpp
+  src/application.h src/application.cpp
+  src/service/service.h src/service/service.cpp
+
+
+  src/middleware/imiddleware.h
 
 
 )
@@ -124,6 +130,7 @@ add_executable(NeobankServer ${SOURCES}
 #include_directories("" "" "") - для поиска хедеров
 
 target_link_libraries(NeobankServer PRIVATE Qt6::Core Qt::Network Qt6::Sql PostgreSQL::PostgreSQL)
+target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 target_link_libraries(NeobankServer PRIVATE Qt6::Core)

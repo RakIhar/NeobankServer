@@ -1,10 +1,13 @@
 #include "contextwrapper.h"
 
-ContextWrapper::ContextWrapper(QObject *parent)
-    : QObject{parent}
-{}
+std::pair<QUuid, QByteArray> ContextWrapper::reduceContext(MessageContext &msgCtx)
+{
+    return std::make_pair(msgCtx.connection, QJsonDocument(msgCtx.jsonResponce).toJson(QJsonDocument::JsonFormat::Compact));
+}
 
-void ContextWrapper::onCreateContext(const QUuid &connection, const QByteArray &rawData)
+std::optional<MessageContext> ContextWrapper::createContext(QUuid &connection, QByteArray &rawData,
+                                                            EndpointRegistry& registry,
+                                                            ServiceScope& services)
 {
     QJsonDocument doc = QJsonDocument::fromJson(rawData);
     if (!doc.isNull())
@@ -16,12 +19,10 @@ void ContextWrapper::onCreateContext(const QUuid &connection, const QByteArray &
             ctx.jsonRequest = obj;
             ctx.requestId = QUuid::createUuid();
             ctx.connection = connection;
-            emit contextCreated(ctx);
+            ctx.endpoints = registry;
+            ctx.services = services;
+            return ctx;
         }
     }
-}
-
-void ContextWrapper::onReduceContext(MessageContext &msgCtx)
-{
-    emit contextReduced(msgCtx.connection, QJsonDocument(msgCtx.jsonResponce).toJson(QJsonDocument::JsonFormat::Compact));
+    return std::nullopt;
 }

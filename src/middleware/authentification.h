@@ -2,7 +2,7 @@
 #define AUTHENTIFICATION_H
 
 #include <QObject>
-#include "../pipeline/middleware.h"
+#include "imiddleware.h"
 
 class Authentification : public QObject, public IMiddleware
 {

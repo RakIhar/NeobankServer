@@ -2,7 +2,7 @@
 #define AUTHORIZATION_H
 
 #include <QObject>
-#include "../pipeline/middleware.h"
+#include "imiddleware.h"
 
 class Authorization : public QObject, public IMiddleware
 {

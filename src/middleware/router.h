@@ -2,7 +2,7 @@
 #define ROUTER_H
 
 #include <QObject>
-#include "../pipeline/middleware.h"
+#include "imiddleware.h"
 /*
 class EndpointCollection {
 public:

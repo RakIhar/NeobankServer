@@ -2,13 +2,16 @@
 #define CONTEXTWRAPPER_H
 
 #include <QObject>
-#include "messagecontext.h"
+#include "context.h"
 
-class ContextWrapper : public QObject
+class ContextWrapper
 {
-    Q_OBJECT
 public:
-    explicit ContextWrapper(QObject *parent = nullptr);
+    ContextWrapper() = delete;
+    static std::pair<QUuid, QByteArray> reduceContext(MessageContext &msgCtx);
+    static std::optional<MessageContext> createContext(QUuid &connection, QByteArray &rawData,
+                                                       EndpointRegistry& registry,
+                                                       ServiceScope& services);
 
 signals:
     void contextCreated(MessageContext &msgCtx);

@@ -2,7 +2,7 @@
 #define SESSION_H
 
 #include <QObject>
-#include "../pipeline/middleware.h"
+#include "imiddleware.h"
 
 class Session : public QObject, public IMiddleware
 {
