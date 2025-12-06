@@ -32,7 +32,7 @@ T *ServiceScope::get()
 
     case ServiceType::Transient:
         static_assert(!std::is_same_v<T, T>, "Use createTransient<T>() to obtain Transient services");
-        //ПРИ ПОЛУЧЕНИИ НАДО БЫЛО ДЕЛАТЬ unique_ptr
+        //ПРИ ПОЛУЧЕНИИ НАДО БЫЛО БЫ ДЕЛАТЬ unique_ptr
         return static_cast<T*>(descriptor.factory().release());
     }
     return nullptr;
@@ -52,35 +52,6 @@ T *ServiceProvider::getSingleton()
     singletons[key] = std::move(instance);
     //перенос ибо после выхода из области видимости удалился бы
     return raw;
-}
-
-template<typename TService>
-void ServiceProvider::addService(ServiceType type)
-{
-    static_assert(std::is_base_of_v<IService, TService>, "TService must derive from IService");
-    static_assert(std::is_default_constructible_v<TService>, "Service must have default constructor");
-
-    Factory f = []{
-        // return std::unique_ptr<IService>(static_cast<IService*>(new TImpl()));
-        return std::make_unique<TService>();
-    };
-    registry[typeid(TService).hash_code()] = ServiceDescriptor{ type, f };
-}
-
-template<typename TService, typename TImpl>
-void ServiceProvider::addService(ServiceType type)
-{
-    static_assert(std::is_base_of_v<TService, TImpl>, "TImpl must derive from TService");
-    static_assert(std::is_base_of_v<IService, TService>, "TService must derive from IService");
-    static_assert(std::is_default_constructible_v<TImpl>, "Service must have default constructor");
-
-    Factory f = []{
-        // return std::unique_ptr<IService>(static_cast<IService*>(new TImpl()));
-        return std::make_unique<TImpl>();
-    };
-    //RVO: компилятор создает unique_ptr в месте назначение, без копирования
-    //или move если не rvo, крч кресты пиздец всратое говно
-    registry[typeid(TService).hash_code()] = ServiceDescriptor{ type, f };
 }
 
 template<typename T>

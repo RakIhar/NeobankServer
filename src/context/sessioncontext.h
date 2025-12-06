@@ -1,7 +1,7 @@
 #ifndef SESSIONCONTEXT_H
 #define SESSIONCONTEXT_H
 
-// ISession (Id, IsAvailable, Data) - хранение данных между запросами, потому что MessageContext лишь на один запрос
+// ISession (Id, IsAvailable, Data) - хранение данных между запросами
 class SessionContext
 {
 public:

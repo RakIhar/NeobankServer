@@ -18,12 +18,12 @@ public: //ИНТЕРФЕЙС СЕРВЕРА
     explicit TransportLayer(QObject *parent = nullptr);
     void start();
     void stop();
-public slots: //ИНТЕРФЕЙС ОБМЕНА СООБЩЕНИЯМИ МЕЖДУ СЛОЯМИ
-    void onSendMessage(const QUuid &connection, const QByteArray &rawData); //делать ли слотами
-    void close(const QUuid &connection);                                  //
+public: //ИНТЕРФЕЙС ОБМЕНА СООБЩЕНИЯМИ МЕЖДУ СЛОЯМИ
+    void sendMessage(const QUuid connection, const QByteArray rawData);
+    void close(const QUuid connection);
 signals:
-    void messageReceived(const QUuid &connection, const QByteArray &rawData);
-    void closed(const QUuid &connection);
+    void messageReceived(const QUuid connection, const QByteArray rawData);
+    void closed(const QUuid connection);
 
 private slots: //ОБЕРТКА НАД QSslServer
     void onEncryptedReady();

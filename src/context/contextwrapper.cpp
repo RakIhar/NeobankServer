@@ -5,9 +5,9 @@ std::pair<QUuid, QByteArray> ContextWrapper::reduceContext(MessageContext &msgCt
     return std::make_pair(msgCtx.connection, QJsonDocument(msgCtx.jsonResponce).toJson(QJsonDocument::JsonFormat::Compact));
 }
 
-std::optional<MessageContext> ContextWrapper::createContext(QUuid &connection, QByteArray &rawData,
-                                                            EndpointRegistry& registry,
-                                                            ServiceScope& services)
+std::optional<MessageContext> ContextWrapper::createContext(QUuid connection, QByteArray rawData,
+                                                            EndpointRegistry& endpoints,
+                                                            ServiceScope services)
 {
     QJsonDocument doc = QJsonDocument::fromJson(rawData);
     if (!doc.isNull())
@@ -15,12 +15,10 @@ std::optional<MessageContext> ContextWrapper::createContext(QUuid &connection, Q
         if (doc.isObject())
         {
             QJsonObject obj = doc.object();
-            MessageContext ctx;
+            MessageContext ctx(std::move(services), endpoints);
             ctx.jsonRequest = obj;
             ctx.requestId = QUuid::createUuid();
             ctx.connection = connection;
-            ctx.endpoints = registry;
-            ctx.services = services;
             return ctx;
         }
     }

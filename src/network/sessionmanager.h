@@ -12,11 +12,11 @@ class ConnectionManager : public QObject
 public:
     explicit ConnectionManager(QObject *parent = nullptr);
     void CreateConnection(QSslSocket* socket);
-    void sendMessage(const QUuid &connection, const QByteArray &rawData);
-    void close(const QUuid &connection);
+    void sendMessage(const QUuid connection, const QByteArray rawData);
+    void close(const QUuid connection);
 signals:
-    void messageReceived(const QUuid &connection, const QByteArray &rawData);
-    void closed(const QUuid &connection);
+    void messageReceived(const QUuid connection, const QByteArray rawData);
+    void closed(const QUuid connection);
 private:
     QHash<QUuid, QPointer<SocketWrapper>> m_socketConnections;
     QTimer m_cleanupTimer;

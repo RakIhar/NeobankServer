@@ -9,7 +9,7 @@ public:
     void addMiddleware(std::unique_ptr<IMiddleware> m);
     RequestDelegate build(RequestDelegate endpoint);
 private:
-    QVector<std::unique_ptr<IMiddleware>> m_middlewares;
+    std::vector<std::unique_ptr<IMiddleware>> m_middlewares;
 };
 
 #endif // PIPELINE_H

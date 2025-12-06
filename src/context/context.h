@@ -18,14 +18,10 @@ class EndpointRegistry
 {
 public:
     void registerEndpoint(const QString& name, QSharedPointer<IEndpoint> ep)
-    {
-        endpoints[name] = ep;
-    }
+    { endpoints[name] = ep; }
 
     QSharedPointer<IEndpoint> getEndpoint(const QString& name)
-    {
-        return endpoints.value(name, nullptr);
-    }
+    { return endpoints.value(name, nullptr); }
 
 private:
     QHash<QString, QSharedPointer<IEndpoint>> endpoints;
@@ -35,7 +31,10 @@ private:
 class MessageContext
 {
 public:
-    MessageContext();
+    MessageContext(ServiceScope services, EndpointRegistry& endpoints)
+        : services(std::move(services))
+        , endpoints(endpoints)
+    {}
     bool aborted = false;
     void abort() { aborted = true; }
     QJsonObject jsonRequest;
@@ -46,8 +45,8 @@ public:
     QUuid requestId;
     ServiceScope services;
     QHash<QVariant, QVariant> items;
-    EndpointRegistry& endpoints;
-    QSharedPointer<IEndpoint> currentEndpoint;
+    EndpointRegistry& endpoints; //Владение endpoints у Application
+    IEndpoint* currentEndpoint = nullptr; //без владения
 };
 
 #endif // CONTEXT_H

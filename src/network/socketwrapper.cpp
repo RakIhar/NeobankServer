@@ -1,6 +1,6 @@
 #include "socketwrapper.h"
 
-SocketWrapper::SocketWrapper(const QUuid &sessionId,
+SocketWrapper::SocketWrapper(const QUuid sessionId,
                              QSslSocket *socket,
                              QObject *parent)
     : QObject(parent),
@@ -28,7 +28,6 @@ SocketWrapper::SocketWrapper(const QUuid &sessionId,
 
     qDebug() << "Новая сокет-сессия создана" << sessionId;
 
-
     m_info.id = sessionId;
 
     m_info.createdAt = QDateTime::currentDateTimeUtc();
@@ -37,7 +36,7 @@ SocketWrapper::SocketWrapper(const QUuid &sessionId,
     m_info.peerPort = socket->peerPort();
 }
 
-void SocketWrapper::sendData(const QByteArray &rawData)
+void SocketWrapper::sendData(const QByteArray rawData)
 {
     quint32 msgSize = rawData.size();
     QByteArray packet;

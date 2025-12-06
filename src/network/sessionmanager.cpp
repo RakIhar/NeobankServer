@@ -38,13 +38,13 @@ void ConnectionManager::CreateConnection(QSslSocket *socket)
     m_socketConnections.insert(sessionId, session);
 }
 
-void ConnectionManager::sendMessage(const QUuid &connection, const QByteArray &rawData)
+void ConnectionManager::sendMessage(const QUuid connection, const QByteArray rawData)
 {
     if (m_socketConnections.contains(connection))
         m_socketConnections.value(connection)->sendData(rawData);
 }
 
-void ConnectionManager::close(const QUuid &connection)
+void ConnectionManager::close(const QUuid connection)
 {
     if (m_socketConnections.contains(connection))
         m_socketConnections.value(connection)->close();

@@ -9,7 +9,7 @@ class AuthentificationMiddleware : public QObject, public IMiddleware
 {
     Q_OBJECT
 public:
-    explicit AuthentificationMiddleware(QObject *parent = nullptr);
+    explicit AuthentificationMiddleware(QObject *parent = nullptr) {}
 
 signals:
 };
@@ -18,95 +18,9 @@ class AuthentificationService : public QObject, public IService
 {
     Q_OBJECT
 public:
-    explicit AuthentificationService(QObject *parent = nullptr);
+    explicit AuthentificationService(QObject *parent = nullptr) {}
 
 signals:
 };
-
-/*
-Жизненный цикл middleware
-Компоненты middleware создаются один раз и существуют в течение всего жизненного цикла приложения.
-То есть для последующей обработки запросов используются одни и те же компоненты.
-Например, определим в файле Program.cs следующий код:
-
-var builder = WebApplication.CreateBuilder();
-var app = builder.Build();
-int x = 2;
-app.Run(async (context) =>
-{
-    x = x * 2;  //  2 * 2 = 4
-    await context.Response.WriteAsync($"Result: {x}");
-});
-app.Run();
-
-При запуске приложения мы естественно ожидаем, что браузер выведет число 4 в качестве результата:
-Однако при последующих запросах мы увидим, что результат переменной х не равен 4.
-*/
-
-/*
-Каждый сервис в коллекции IServiceCollection представляет объект ServiceDescriptor, который несет некоторую информацию.
-В частности, наиболее важные свойства этого объекта:
-ServiceType: тип сервиса
-ImplementationType: тип реализации сервиса
-Lifetime: жизненный цикл сервиса
-*/
-
-/*
-После добавления сервиса его можно получить и использовать в любой части приложения.
-Для получения сервиса могут применяться различные способы в зависимости от ситуации.
-В данном случае используется свойство app.Services., которое предоставляет провайдер сервисов - объект IServiceProvider.
-
-Для получения сервиса у провайдера сервиса вызывается метод GetService(), который типизируется типом сервиса:
-var timeService = app.Services.GetService<ITimeService>();
-
-После получения сервиса мы можем использовать его.
-await context.Response.WriteAsync($"Time: {timeService?.GetTime()}");
-*/
-
-/*
-В ASP.NET Core мы можем получить добавленные в приложения сервисы различными способами;
-
-Через свойство Services объекта WebApplication (service locator)
-Через свойство RequestServices контекста запроса HttpContext в компонентах middleware (service locator)
-Через конструктор класса
-Через параметр метода Invoke компонента middleware
-Через свойство Services объекта WebApplicationBuilder
-
-В middleware мы можем получить зависимости тремя способами:
-
-Через конструктор - сложно
-Через параметр метода Invoke/InvokeAsync - сложно
-Через свойство HttpContext.RequestServices
-*/
-
-/*
-И когда при обработке запроса будет использоваться класс TimeMessage, для создания объекта этого класса будет вызываться провайдер сервисов.
-Провайдер сервисов проверят конструктор класса TimeMessage на наличие зависимостей.
-Затем создает объекты для всех используемых зависимостей и передает их в конструктор.
-*/
-
-/*
-Transient: при каждом обращении к сервису создается новый объект сервиса.
-В течение одного запроса может быть несколько обращений к сервису, соответственно при каждом обращении будет создаваться новый объект.
-Подобная модель жизненного цикла наиболее подходит для легковесных сервисов, которые не хранят данных о состоянии
-
-Scoped: для каждого запроса создается свой объект сервиса.
-То есть если в течение одного запроса есть несколько обращений к одному сервису, то при всех этих обращениях будет использоваться один и тот же объект сервиса.
-
-Singleton: объект сервиса создается при первом обращении к нему, все последующие запросы используют один и тот же ранее созданный объект сервиса
-
-AddTransient, AddScoped, AddSingleton(можно с передачей) в билдере
-*/
-
-/*
-Для использования системы маршрутизации в конвейер обработки запроса добавляются два встроенных компонента middleware:
-
-Microsoft.AspNetCore.Routing.EndpointMiddleware добавляет в конвейер обработки запроса конечные точки.
-Добавляется в конвейер с помощью метода UseEndpoints()
-
-Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware добавляет в конвейер обработки запроса функциональность сопоставления запросов и маршрутов.
-Данный middleware выбирает конечную точку, которая соответствует запросу и которая затем обрабатывает запрос.
-Добавляется в конвейер с помощью метода UseRouting()
-*/
 
 #endif // AUTHENTIFICATION_H

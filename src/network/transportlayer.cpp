@@ -77,12 +77,12 @@ void TransportLayer::stop() //TODO: IMPLEMENT
     m_sslServer->close();
 }
 
-void TransportLayer::close(const QUuid &connection)
+void TransportLayer::close(const QUuid connection)
 {
     m_sessionManager->close(connection);
 }
 
-void TransportLayer::onSendMessage(const QUuid &connection, const QByteArray &rawData)
+void TransportLayer::sendMessage(const QUuid connection, const QByteArray rawData)
 {
     qDebug() << "Отправлено: " << rawData;
     m_sessionManager->sendMessage(connection, rawData);

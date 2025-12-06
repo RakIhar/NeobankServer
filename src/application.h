@@ -3,46 +3,38 @@
 
 #include <QObject>
 #include "network/transportlayer.h"
-// #include "context/contextwrapper.h"
 #include "pipeline/pipelinebuilder.h"
+
+/*
+Модель владения:
+Application
+ ├─ ServiceProvider (root, владелец)
+ ├─ EndpointRegistry (root, владелец)
+ └─ MessageContext  (на каждый запрос)
+         ├─ ServiceScope (копия / value)
+         └─ EndpointRegistry& (borrow)
+*/
 
 class Application : public QObject
 {
     Q_OBJECT
 public:
     explicit Application(QObject *parent = nullptr);
-    void start();
-    void stop();
-
-    void build(RequestDelegate endpoint)//построить делегат, подключить сигналы/слоты
-    {
-        m_requestDelegate = m_pipelineBuilder.build(endpoint);
-    }
-    void useEndpoint(QString name, QSharedPointer<IEndpoint> e)//тоже синглтон, потому что мне лень писать крутой код
-    {
-        m_endpoints.registerEndpoint(name, e);//заменить на std_shared_ptr, обдумать указатели в контексте
-    }
-    void useMiddleware(std::unique_ptr<IMiddleware> m)//синглтон, поэтому без возни с шаблонами
-    {
-        m_pipelineBuilder.addMiddleware(std::move(m));
-    }
+    void start() { m_host.start(); }
+    void stop() { m_host.stop();}
+    void build(RequestDelegate endpoint) { m_requestDelegate = m_pipelineBuilder.build(endpoint); }
+    void useEndpoint(QString name, QSharedPointer<IEndpoint> e) { m_endpoints.registerEndpoint(name, e); }
+    void useMiddleware(std::unique_ptr<IMiddleware> m) { m_pipelineBuilder.addMiddleware(std::move(m)); }
     template<typename TService, typename TImpl>
-    void useService(ServiceType type)
-    {
-        m_serviceProvider.addService<TService, TImpl>(type);
-    }
+    void useService(ServiceType type) { m_serviceProvider->addService<TService, TImpl>(type); }
     template<typename TService>
-    void useService(ServiceType type)
-    {
-        m_serviceProvider.addService<TService>(type);
-    }
+    void useService(ServiceType type) { m_serviceProvider->addService<TService>(type); }
 private:
-    //host->wrapper->delegate->wrapper->delegate
     TransportLayer m_host;
-    RequestDelegate m_requestDelegate; //результат работы билдера конвейера
-    PipeLineBuilder m_pipelineBuilder; //middleware хранятся здесь
-    EndpointRegistry m_endpoints; //передаются в contextWrapper
-    ServiceProvider m_serviceProvider; //это root, который передается в конструктор ServiceScoped, который передаётся в contextWrapper
+    RequestDelegate m_requestDelegate;
+    PipeLineBuilder m_pipelineBuilder;
+    EndpointRegistry m_endpoints;
+    ServiceProvider* m_serviceProvider;
 signals:
 };
 

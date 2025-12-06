@@ -17,25 +17,24 @@ class SocketWrapper : public QObject
 {
     Q_OBJECT
 public:
-    explicit SocketWrapper(const QUuid &sessionId,
+    explicit SocketWrapper(const QUuid sessionId,
                            QSslSocket* socket,
                            QObject *parent = nullptr);
 
     ConnectionInfo info() const { return m_info; };
     void close();
-    void sendData(const QByteArray &rawData);
+    void sendData(const QByteArray rawData);
 
-    void updateLastActivity(); //опционально public. Activity обновляется при отправке, получении сообщений
+    void updateLastActivity();
 signals:
-    void messageReceived(const QUuid &sessionId, const QByteArray &rawData);
-    void closed(const QUuid &sessionId);
+    void messageReceived(const QUuid sessionId, const QByteArray rawData); //копирование вместо ссылок
+    void closed(const QUuid sessionId);
 
 private slots:
     void onReadyRead();
 private:
     ConnectionInfo m_info;
 
-    // void processIncomingMessage(const QByteArray &rawData);
     void closeSession();
 
     bool m_isClosed = false;

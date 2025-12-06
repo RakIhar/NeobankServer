@@ -2,10 +2,10 @@
 #include <QTimer>
 #include <QObject>
 #include "middleware/authentification.h"
-// #include "middleware/authorization.h"
-// #include "middleware/router.h"
-// #include "middleware/logger.h"
-// #include "middleware/session.h"
+#include "middleware/authorization.h"
+#include "middleware/router.h"
+#include "middleware/logger.h"
+#include "middleware/session.h"
 #include "middleware/endpointinvoker.h"
 #include "application.h"
 int main(int argc, char *argv[])
