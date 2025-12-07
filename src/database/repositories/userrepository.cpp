@@ -5,9 +5,9 @@
 using namespace Database;
 
 
-User UserRepository::mapUser(const QSqlQuery &query)
+Models::User UserRepository::mapUser(const QSqlQuery &query)
 {
-    User user;
+    Models::User user;
     user.id = query.value("id").toLongLong();
     user.username = query.value("username").toString();
     user.passwordHash = query.value("password_hash").toString();
@@ -19,7 +19,7 @@ User UserRepository::mapUser(const QSqlQuery &query)
     return user;
 }
 
-std::optional<User> UserRepository::create(const User &user)
+std::optional<Models::User> UserRepository::create(const Models::User &user)
 {
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO users (username, password_hash, email, phone, status) "
@@ -41,7 +41,7 @@ std::optional<User> UserRepository::create(const User &user)
     return mapUser(q);
 }
 
-std::optional<User> UserRepository::findById(qint64 id) const
+std::optional<Models::User> UserRepository::findById(qint64 id) const
 {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, username, password_hash, email, phone, status, created_at, updated_at "
@@ -52,7 +52,7 @@ std::optional<User> UserRepository::findById(qint64 id) const
     return mapUser(q);
 }
 
-std::optional<User> UserRepository::findByUsername(const QString &username) const
+std::optional<Models::User> UserRepository::findByUsername(const QString &username) const
 {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, username, password_hash, email, phone, status, created_at, updated_at "

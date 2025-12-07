@@ -2,6 +2,8 @@
 #define CONSTANTS_H
 #include <QAbstractSocket>
 
+namespace Common  {
+
 enum class Role
 {
     None        = 0,  // без прав
@@ -42,13 +44,16 @@ enum class Permission
 
 enum class ProtocolType
 {
-
+    Login,
+    Register,
+    Authorization
 };
 
 enum class JsonField
 {
     UserId,
     Username,
+    Password,
     PasswordHash,
     Email,
     AccountId,
@@ -56,16 +61,33 @@ enum class JsonField
     Currency,
     TransactionId,
     Amount,
-    Type,
-    Timestamp
+    Type, //по нему маршрут и авторизаци
+    Subtype,
+    Timestamp,
+    SessionId,
+    Token,
+    Result,
+    Reason,
+    ReasonCode
 };
 
-inline QString toString(JsonField field)
+inline QString toStr(ProtocolType type)
+{
+    switch(type) {
+    case ProtocolType::Login: return "login";
+    case ProtocolType::Register: return "register";
+    case ProtocolType::Authorization: return "authorization";
+    }
+    return {};
+}
+
+inline QString toStr(JsonField field)
 {
     switch(field)
     {
     case JsonField::UserId: return "user_id";
     case JsonField::Username: return "username";
+    case JsonField::Password: return "password";
     case JsonField::PasswordHash: return "password_hash";
     case JsonField::Email: return "email";
     case JsonField::AccountId: return "account_id";
@@ -74,12 +96,18 @@ inline QString toString(JsonField field)
     case JsonField::TransactionId: return "transaction_id";
     case JsonField::Amount: return "amount";
     case JsonField::Type: return "type";
+    case JsonField::Subtype: return "subtype";
     case JsonField::Timestamp: return "timestamp";
+    case JsonField::SessionId: return "session_id";
+    case JsonField::Token: return "token";
+    case JsonField::Result: return "result";
+    case JsonField::Reason: return "reason";
+    case JsonField::ReasonCode: return "reason_code";
     }
     return {};
 }
 
-inline QString toString(QAbstractSocket::SocketState st)
+inline QString toStr(QAbstractSocket::SocketState st)
 {
     switch(st) {
     case QAbstractSocket::UnconnectedState: return "Не подключен";
@@ -93,5 +121,6 @@ inline QString toString(QAbstractSocket::SocketState st)
     return {};
 }
 
+}
 
 #endif // CONSTANTS_H

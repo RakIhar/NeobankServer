@@ -23,17 +23,17 @@ public:
         : m_db(db.isValid() ? db : QSqlDatabase::database()) {}
     explicit AuthSessionRepository(DataBaseManager* dbm) : m_db(dbm->database())
         { qDebug() << "ctor AuthSessionRepository"; };
-    std::optional<AuthSession> upsert(const AuthSession &session);
-    std::optional<AuthSession> findById(const QUuid &id) const;
-    std::optional<AuthSession> findByToken(const QString &token) const;
-    bool updateState(const QUuid &id, AuthSessionState state);
+    std::optional<Models::AuthSession> upsert(const Models::AuthSession &session);
+    std::optional<Models::AuthSession> findById(const QUuid &id) const;
+    std::optional<Models::AuthSession> findByToken(const QString &token) const;
+    bool updateState(const QUuid &id, Models::AuthSessionState state);
     bool deleteSession(const QUuid &id);
 
 private:
     QSqlDatabase m_db;
-    static AuthSession mapSession(const QSqlQuery &query);
-    static QString toStateString(AuthSessionState state);
-    static AuthSessionState fromStateString(const QString &state);
+    static Models::AuthSession mapSession(const QSqlQuery &query);
+    static QString toStateString(Models::AuthSessionState state);
+    static Models::AuthSessionState fromStateString(const QString &state);
 };
 
 }

@@ -5,6 +5,8 @@
 #include <QDateTime>
 #include <QJsonObject>
 
+namespace Models {
+
 struct Transaction
 {
     qint64 id = 0;
@@ -20,6 +22,7 @@ struct Transaction
 };
 #endif // TRANSACTION_H
 
+}
 /*
 neobank=# \d+ transactions
                                                                     Table "public.transactions"

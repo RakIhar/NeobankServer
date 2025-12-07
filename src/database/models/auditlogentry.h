@@ -6,6 +6,8 @@
 #include <QString>
 #include <QUuid>
 
+namespace Models {
+
 struct AuditLogEntry
 {
     qint64 id = 0;
@@ -15,6 +17,8 @@ struct AuditLogEntry
     QJsonObject details;
     QDateTime created_at;
 };
+
+}
 
 #endif // AUDITLOGENTRY_H
 

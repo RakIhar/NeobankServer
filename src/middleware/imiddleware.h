@@ -1,7 +1,7 @@
 #ifndef IMIDDLEWARE_H
 #define IMIDDLEWARE_H
 #include <functional>
-#include "../context/context.h"
+#include "../context/messagecontext.h"
 
 using RequestDelegate = std::function<void(MessageContext&)>;
 

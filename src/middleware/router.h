@@ -2,6 +2,7 @@
 #define ROUTER_H
 
 #include "imiddleware.h"
+#include "../common/constants.h"
 
 namespace Middlewares{
 
@@ -15,7 +16,7 @@ public:
             {
                 qDebug() << "[Router] enter";
 
-                QString route = ctx.jsonRequest["endpoint"].toString();
+                QString route = ctx.jsonRequest[Common::toStr(Common::JsonField::Type)].toString();
 
                 ctx.currentEndpoint = ctx.endpoints.getEndpoint(route);
 

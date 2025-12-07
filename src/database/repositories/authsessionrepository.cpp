@@ -9,34 +9,32 @@ using namespace Database;
     }
 }
 
-
-
-QString AuthSessionRepository::toStateString(AuthSessionState state)
+QString AuthSessionRepository::toStateString(Models::AuthSessionState state)
 {
     switch (state) {
-    case AuthSessionState::Pending: return QStringLiteral("pending");
-    case AuthSessionState::Established: return QStringLiteral("established");
-    case AuthSessionState::Expired: return QStringLiteral("expired");
-    case AuthSessionState::Revoked: return QStringLiteral("revoked");
+    case Models::AuthSessionState::Pending: return QStringLiteral("pending");
+    case Models::AuthSessionState::Established: return QStringLiteral("established");
+    case Models::AuthSessionState::Expired: return QStringLiteral("expired");
+    case Models::AuthSessionState::Revoked: return QStringLiteral("revoked");
     }
     return QStringLiteral("pending");
 }
 
-AuthSessionState AuthSessionRepository::fromStateString(const QString &state)
+Models::AuthSessionState AuthSessionRepository::fromStateString(const QString &state)
 {
     const QString normalized = state.toLower();
     if (normalized == "established")
-        return AuthSessionState::Established;
+        return Models::AuthSessionState::Established;
     if (normalized == "expired")
-        return AuthSessionState::Expired;
+        return Models::AuthSessionState::Expired;
     if (normalized == "revoked")
-        return AuthSessionState::Revoked;
-    return AuthSessionState::Pending;
+        return Models::AuthSessionState::Revoked;
+    return Models::AuthSessionState::Pending;
 }
 
-AuthSession AuthSessionRepository::mapSession(const QSqlQuery &query)
+Models::AuthSession AuthSessionRepository::mapSession(const QSqlQuery &query)
 {
-    AuthSession session;
+    Models::AuthSession session;
     session.id = QUuid(query.value("id").toString());
     session.user_id = query.value("user_id").toLongLong();
     session.state = fromStateString(query.value("state").toString());
@@ -48,7 +46,7 @@ AuthSession AuthSessionRepository::mapSession(const QSqlQuery &query)
     return session;
 }
 
-std::optional<AuthSession> AuthSessionRepository::upsert(const AuthSession &session)
+std::optional<Models::AuthSession> AuthSessionRepository::upsert(const Models::AuthSession &session)
 {
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO auth_sessions "
@@ -82,7 +80,7 @@ std::optional<AuthSession> AuthSessionRepository::upsert(const AuthSession &sess
     return mapSession(q);
 }
 
-std::optional<AuthSession> AuthSessionRepository::findById(const QUuid &id) const
+std::optional<Models::AuthSession> AuthSessionRepository::findById(const QUuid &id) const
 {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, user_id, state, token, ip_address, user_agent, created_at, expires_at "
@@ -93,7 +91,7 @@ std::optional<AuthSession> AuthSessionRepository::findById(const QUuid &id) cons
     return mapSession(q);
 }
 
-std::optional<AuthSession> AuthSessionRepository::findByToken(const QString &token) const
+std::optional<Models::AuthSession> AuthSessionRepository::findByToken(const QString &token) const
 {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, user_id, state, token, ip_address, user_agent, created_at, expires_at "
@@ -104,7 +102,7 @@ std::optional<AuthSession> AuthSessionRepository::findByToken(const QString &tok
     return mapSession(q);
 }
 
-bool AuthSessionRepository::updateState(const QUuid &id, AuthSessionState state)
+bool AuthSessionRepository::updateState(const QUuid &id, Models::AuthSessionState state)
 {
     QSqlQuery q(m_db);
     q.prepare("UPDATE auth_sessions SET state = :state WHERE id = :id");

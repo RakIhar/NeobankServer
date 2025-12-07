@@ -1,7 +1,7 @@
 #ifndef CONTEXTWRAPPER_H
 #define CONTEXTWRAPPER_H
 
-#include "context.h"
+#include "messagecontext.h"
 
 class ContextWrapper
 {

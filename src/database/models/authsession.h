@@ -3,6 +3,8 @@
 #include <QUuid>
 #include <QDateTime>
 
+namespace Models {
+
 enum class AuthSessionState
 {
     Pending,
@@ -22,6 +24,8 @@ struct AuthSession
     QDateTime created_at;
     QDateTime expires_at;
 };
+
+}
 
 #endif // AUTHSESSION_H
 

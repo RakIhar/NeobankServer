@@ -19,15 +19,15 @@ public:
         : m_db(db.isValid() ? db : QSqlDatabase::database()) {}
     explicit UserRepository(DataBaseManager* dbm) : m_db(dbm->database())
         { qDebug() << "ctor UserRepository"; };
-    std::optional<User> create(const User &user);
-    std::optional<User> findById(qint64 id) const;
-    std::optional<User> findByUsername(const QString &username) const;
+    std::optional<Models::User> create(const Models::User &user);
+    std::optional<Models::User> findById(qint64 id) const;
+    std::optional<Models::User> findByUsername(const QString &username) const;
     bool updatePassword(qint64 id, const QString &passwordHash);
     bool updateStatus(qint64 id, const QString &status);
 
 private:
     QSqlDatabase m_db;
-    static User mapUser(const QSqlQuery &query);
+    static Models::User mapUser(const QSqlQuery &query);
 };
 
 }

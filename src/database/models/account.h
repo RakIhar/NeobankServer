@@ -4,6 +4,8 @@
 #include <QString>
 #include <QDateTime>
 
+namespace Models {
+
 struct Account
 {
     qint64 id = 0;
@@ -17,6 +19,8 @@ struct Account
 };
 
 #endif // ACCOUNT_H
+
+}
 
 /*
 neobank=# \d+ accounts

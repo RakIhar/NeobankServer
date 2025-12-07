@@ -1,12 +1,20 @@
 #ifndef SESSIONCONTEXT_H
 #define SESSIONCONTEXT_H
+#include <QHash>
+#include <QUuid>
+#include <QVariant>
 
-// ISession (Id, IsAvailable, Data) - хранение данных между запросами
-//должен быть сервис, этими сессиями управляющий(unique_ptr) - контекст будет хранить QPointer либо *
-class SessionContext
+namespace Context {
+
+class Session
 {
 public:
-    SessionContext();
+    Session() {};
+    bool isAvailable;
+    QUuid sessionId;
+    QHash<QVariant, QVariant> items;
 };
+
+}
 
 #endif // SESSIONCONTEXT_H

@@ -3,7 +3,7 @@
 
 #include "service/iservice.h"       //ISERVICE
 #include "middleware/imiddleware.h" //IMIDDLEWARE
-#include "context/context.h"        //IENDPOINT
+#include "context/messagecontext.h"        //IENDPOINT
 
 /*
     // app.useService<DepA>(ServiceType::Singleton);
@@ -55,7 +55,7 @@ public:
 
 class MiddlewareInjectTest : public IMiddleware {
 public:
-    void invoke(MessageContext& ctx, const RequestDelegate& next) override
+    void invoke(Context::MessageContext& ctx, const RequestDelegate& next) override
     {
         qDebug() << "[MiddlewareInjectTest] enter";
 

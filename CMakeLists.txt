@@ -10,71 +10,25 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 COMPONENTS Core Network Sql REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
   src/main.cpp
+  src/common/constants.h
+  src/test3.h
+  src/pipeline/pipelinebuilder.h src/pipeline/pipelinebuilder.cpp
+  src/application.h src/application.cpp
 
-
-
-
-
-
+  src/network/socketwrapper.h src/network/socketwrapper.cpp
+  src/network/sessionmanager.h src/network/sessionmanager.cpp
   src/network/transportlayer.h
   src/network/transportlayer.cpp
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  src/common/constants.h
-
-
+  src/context/contextwrapper.h src/context/contextwrapper.cpp
+  src/context/messagecontext.h
+  src/context/user.h src/context/user.cpp
+  src/context/sessioncontext.h src/context/sessioncontext.cpp
+  src/context/messagecontext.h src/context/messagecontext.cpp
 
   src/database/dbmanager.h
   src/database/dbmanager.cpp
@@ -93,65 +47,29 @@ set(SOURCES
   src/database/repositories/authsessionrepository.cpp
   src/database/repositories/auditlogrepository.h
   src/database/repositories/auditlogrepository.cpp
-)
 
-add_executable(NeobankServer ${SOURCES}
-
-
-
-  src/network/socketwrapper.h src/network/socketwrapper.cpp
-  src/network/sessionmanager.h src/network/sessionmanager.cpp
-
-
-
-  src/context/contextwrapper.h src/context/contextwrapper.cpp
-  src/context/context.h
-
-  src/context/user.h src/context/user.cpp
-  src/context/sessioncontext.h src/context/sessioncontext.cpp
-  src/context/context.h src/context/context.cpp
-  src/pipeline/pipelinebuilder.h src/pipeline/pipelinebuilder.cpp
-
+  src/middleware/imiddleware.h
   src/middleware/router.h src/middleware/router.cpp
   src/middleware/authentification.h src/middleware/authentification.cpp
   src/middleware/authorization.h src/middleware/authorization.cpp
   src/middleware/endpointinvoker.h src/middleware/endpointinvoker.cpp
   src/middleware/logger.h src/middleware/logger.cpp
   src/middleware/session.h src/middleware/session.cpp
-  src/application.h src/application.cpp
-  src/service/iservice.h src/service/iservice.cpp
-
-
-  src/middleware/imiddleware.h
+  src/middleware/exception.h src/middleware/exception.cpp
 
   src/service/authentification.h src/service/authentification.cpp
-
-  src/tests2.h src/tests2.cpp
-  src/middleware/exception.h src/middleware/exception.cpp
-  src/test3.h src/test3.cpp
-
-
+  src/service/session.h src/service/session.cpp
+  src/service/iservice.h src/service/iservice.cpp
 )
+
+add_executable(NeobankServer ${SOURCES}
+  src/endpoint/login.h src/endpoint/login.cpp
+  src/endpoint/register.h src/endpoint/register.cpp
+  src/endpoint/iendpoint.h)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 
 target_link_libraries(NeobankServer PRIVATE Qt6::Core Qt::Network Qt6::Sql PostgreSQL::PostgreSQL)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
-target_link_libraries(NeobankServer PRIVATE Qt6::Core)
 
 include(GNUInstallDirs)
 install(TARGETS NeobankServer

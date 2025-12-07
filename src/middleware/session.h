@@ -2,7 +2,7 @@
 #define SESSION_H
 
 #include "imiddleware.h"
-#include "../service/iservice.h"
+#include "../service/session.h"
 
 namespace Middlewares{
 
@@ -15,7 +15,7 @@ public:
             try
             {
                 qDebug() << "[Session] enter";
-                //логика, вызов сервисов
+                //TODO дописать
                 next(ctx);
                 qDebug() << "[Session] exit";
             }
@@ -29,9 +29,5 @@ public:
 };
 
 }
-
-/*
-Если сессии нет - создать сессию с SessionId
-*/
 
 #endif // SESSION_H

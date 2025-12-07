@@ -15,7 +15,7 @@ using namespace Database;
  created_at              | timestamp with time zone |           |          | now()                            | plain    |             |              |
 */
 
-std::optional<Transaction> TransactionRepository::addTransaction(const Transaction &t)
+std::optional<Models::Transaction> TransactionRepository::addTransaction(const Models::Transaction &t)
 {
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO transactions (account_id, counterparty_account_id, amount, currency, type, "
@@ -45,9 +45,9 @@ std::optional<Transaction> TransactionRepository::addTransaction(const Transacti
     return mapTransaction(q);
 }
 
-QList<Transaction> TransactionRepository::getByAccount(qint64 account_id) const
+QList<Models::Transaction> TransactionRepository::getByAccount(qint64 account_id) const
 {
-    QList<Transaction> list;
+    QList<Models::Transaction> list;
     QSqlQuery q(m_db);
     q.prepare("SELECT id, account_id, counterparty_account_id, amount, currency, type, description, "
               "status, metadata, created_at "
@@ -60,9 +60,9 @@ QList<Transaction> TransactionRepository::getByAccount(qint64 account_id) const
     return list;
 }
 
-QList<Transaction> TransactionRepository::getRecentForUser(qint64 user_id, int limit) const
+QList<Models::Transaction> TransactionRepository::getRecentForUser(qint64 user_id, int limit) const
 {
-    QList<Transaction> list;
+    QList<Models::Transaction> list;
     QSqlQuery q(m_db);
     q.prepare("SELECT t.id, t.account_id, t.counterparty_account_id, t.amount, t.currency, t.type, "
               "t.description, t.status, t.metadata, t.created_at "
@@ -79,9 +79,9 @@ QList<Transaction> TransactionRepository::getRecentForUser(qint64 user_id, int l
     return list;
 }
 
-Transaction TransactionRepository::mapTransaction(const QSqlQuery &query)
+Models::Transaction TransactionRepository::mapTransaction(const QSqlQuery &query)
 {
-    Transaction t;
+    Models::Transaction t;
     t.id = query.value("id").toLongLong();
     t.account_id = query.value("account_id").toLongLong();
     t.counterparty_account_id = query.value("counterparty_account_id").toLongLong();

@@ -13,7 +13,7 @@ using namespace Database;
  updated_at | timestamp with time zone |           |          | now()
 */
 
-std::optional<Account> AccountRepository::create(const Account &account)
+std::optional<Models::Account> AccountRepository::create(const Models::Account &account)
 {
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO account (user_id, iban, balance, currency, status)"
@@ -37,9 +37,9 @@ std::optional<Account> AccountRepository::create(const Account &account)
     return mapAccount(q);
 }
 
-Account AccountRepository::mapAccount(const QSqlQuery &query)
+Models::Account AccountRepository::mapAccount(const QSqlQuery &query)
 {
-    Account acc;
+    Models::Account acc;
     acc.id = query.value("id").toLongLong();
     acc.user_id = query.value("user_id").toLongLong();
     acc.iban = query.value("iban").toString();
@@ -51,7 +51,7 @@ Account AccountRepository::mapAccount(const QSqlQuery &query)
     return acc;
 }
 
-std::optional<Account> AccountRepository::getById(qint64 id) const
+std::optional<Models::Account> AccountRepository::getById(qint64 id) const
 {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, user_id, iban, balance, currency, status, created_at, updated_at "
@@ -62,9 +62,9 @@ std::optional<Account> AccountRepository::getById(qint64 id) const
     return mapAccount(q);
 }
 
-QList<Account> AccountRepository::getByUser(qint64 user_id) const
+QList<Models::Account> AccountRepository::getByUser(qint64 user_id) const
 {
-    QList<Account> accounts;
+    QList<Models::Account> accounts;
     QSqlQuery q(m_db);
     q.prepare("SELECT id, user_id, iban, balance, currency, status, created_at, updated_at "
               "FROM account WHERE user_id = :user_id");

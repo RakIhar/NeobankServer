@@ -18,14 +18,14 @@ public:
         : m_db(db.isValid() ? db : QSqlDatabase::database()) {}
     explicit AccountRepository(DataBaseManager* dbm) : m_db(dbm->database())
         { qDebug() << "ctor AccountRepository"; };
-    std::optional<Account> create(const Account &account);
-    std::optional<Account> getById(qint64 id) const;
-    QList<Account> getByUser(qint64 userId) const;
+    std::optional<Models::Account> create(const Models::Account &account);
+    std::optional<Models::Account> getById(qint64 id) const;
+    QList<Models::Account> getByUser(qint64 userId) const;
     bool updateBalance(qint64 id, QString newBalance);
     bool updateStatus(qint64 id, const QString &status);
 private:
     QSqlDatabase m_db;
-    static Account mapAccount(const QSqlQuery &query);
+    static Models::Account mapAccount(const QSqlQuery &query);
 };
 
 }

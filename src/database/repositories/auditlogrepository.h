@@ -22,13 +22,13 @@ public:
         : m_db(db.isValid() ? db : QSqlDatabase::database()) {}
     explicit AuditLogRepository(DataBaseManager* dbm) : m_db(dbm->database())
         { qDebug() << "ctor AuditLogRepository"; };
-    bool append(const AuditLogEntry &entry);
-    QList<AuditLogEntry> findByUser(qint64 userId, int limit = 50) const;
-    QList<AuditLogEntry> findBySession(const QUuid &sessionId, int limit = 50) const;
+    bool append(const Models::AuditLogEntry &entry);
+    QList<Models::AuditLogEntry> findByUser(qint64 userId, int limit = 50) const;
+    QList<Models::AuditLogEntry> findBySession(const QUuid &sessionId, int limit = 50) const;
 
 private:
     QSqlDatabase m_db;
-    static AuditLogEntry mapEntry(const QSqlQuery &query);
+    static Models::AuditLogEntry mapEntry(const QSqlQuery &query);
 };
 
 }

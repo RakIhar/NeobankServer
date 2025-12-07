@@ -13,9 +13,9 @@ QString uuidToString(const QUuid &id)
 
 
 
-AuditLogEntry AuditLogRepository::mapEntry(const QSqlQuery &query)
+Models::AuditLogEntry AuditLogRepository::mapEntry(const QSqlQuery &query)
 {
-    AuditLogEntry entry;
+    Models::AuditLogEntry entry;
     entry.id = query.value("id").toLongLong();
     entry.session_id = QUuid(query.value("session_id").toString());
     entry.user_id = query.value("user_id").toLongLong();
@@ -31,7 +31,7 @@ AuditLogEntry AuditLogRepository::mapEntry(const QSqlQuery &query)
     return entry;
 }
 
-bool AuditLogRepository::append(const AuditLogEntry &entry)
+bool AuditLogRepository::append(const Models::AuditLogEntry &entry)
 {
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO audit_log (session_id, user_id, action, details) "
@@ -49,9 +49,9 @@ bool AuditLogRepository::append(const AuditLogEntry &entry)
     return true;
 }
 
-QList<AuditLogEntry> AuditLogRepository::findByUser(qint64 userId, int limit) const
+QList<Models::AuditLogEntry> AuditLogRepository::findByUser(qint64 userId, int limit) const
 {
-    QList<AuditLogEntry> entries;
+    QList<Models::AuditLogEntry> entries;
     QSqlQuery q(m_db);
     q.prepare("SELECT id, session_id, user_id, action, details, created_at "
               "FROM audit_log WHERE user_id = :user_id "
@@ -64,9 +64,9 @@ QList<AuditLogEntry> AuditLogRepository::findByUser(qint64 userId, int limit) co
     return entries;
 }
 
-QList<AuditLogEntry> AuditLogRepository::findBySession(const QUuid &sessionId, int limit) const
+QList<Models::AuditLogEntry> AuditLogRepository::findBySession(const QUuid &sessionId, int limit) const
 {
-    QList<AuditLogEntry> entries;
+    QList<Models::AuditLogEntry> entries;
     QSqlQuery q(m_db);
     q.prepare("SELECT id, session_id, user_id, action, details, created_at "
               "FROM audit_log WHERE session_id = :session_id "

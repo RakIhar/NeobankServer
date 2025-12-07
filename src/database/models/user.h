@@ -1,8 +1,11 @@
-#ifndef USER_H
-#define USER_H
+#ifndef MODELS_USER_H
+#define MODELS_USER_H
 
 #include <QString>
 #include <QDateTime>
+
+namespace Models {
+
 struct User
 {
     qint64 id = 0;
@@ -14,6 +17,10 @@ struct User
     QDateTime created_at;
     QDateTime updated_at;
 };
+
+}
+
+
 
 #endif // USER_H
 
