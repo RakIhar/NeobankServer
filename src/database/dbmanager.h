@@ -10,12 +10,15 @@
 #include <QDateTime>
 #include <QFileInfo>
 #include <QStringList>
+#include "../service/iservice.h"
 
-class DataBaseManager : public QObject
+namespace Database
 {
-    Q_OBJECT
+
+class DataBaseManager : public IService
+{
 public:
-    static DataBaseManager* instance();
+    explicit DataBaseManager();
 
     QSqlDatabase database() const { return m_postgresql; }
     bool isConnected() const { return m_postgresql.isValid() && m_postgresql.isOpen(); }
@@ -36,7 +39,6 @@ private:
     DbConfig m_config;
     QString m_lastError;
 
-    explicit DataBaseManager(QObject *parent = nullptr);
     DataBaseManager(const DataBaseManager&) = delete;
     DataBaseManager& operator=(const DataBaseManager&) = delete;
 
@@ -46,8 +48,9 @@ private:
     bool execStatement(const QString &sql);
 
     QString configPath() const;
-signals:
 };
+
+}
 
 #endif // DBMANAGER_H
 

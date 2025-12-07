@@ -9,12 +9,20 @@
 #include <QSqlRecord>
 
 #include "../models/authsession.h"
+#include "../../service/iservice.h"
 
-class AuthSessionRepository
+#include "../dbmanager.h"
+
+namespace Database
+{
+
+class AuthSessionRepository : public IService
 {
 public:
-    explicit AuthSessionRepository(QSqlDatabase db = QSqlDatabase());
-
+    explicit AuthSessionRepository(QSqlDatabase db = QSqlDatabase())
+        : m_db(db.isValid() ? db : QSqlDatabase::database()) {}
+    explicit AuthSessionRepository(DataBaseManager* dbm) : m_db(dbm->database())
+        { qDebug() << "ctor AuthSessionRepository"; };
     std::optional<AuthSession> upsert(const AuthSession &session);
     std::optional<AuthSession> findById(const QUuid &id) const;
     std::optional<AuthSession> findByToken(const QString &token) const;
@@ -28,5 +36,6 @@ private:
     static AuthSessionState fromStateString(const QString &state);
 };
 
+}
 
 #endif // AUTHSESSIONREPOSITORY_H

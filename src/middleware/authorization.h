@@ -1,16 +1,33 @@
 #ifndef AUTHORIZATION_H
 #define AUTHORIZATION_H
 
-#include <QObject>
 #include "imiddleware.h"
+#include "../service/iservice.h"
 
-class Authorization : public QObject, public IMiddleware
+namespace Middlewares{
+
+class Authorization : public IMiddleware
 {
-    Q_OBJECT
 public:
-    explicit Authorization(QObject *parent = nullptr);
-
-signals:
+    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
+        if (!ctx.isAborted)
+        {
+            try
+            {
+                qDebug() << "[Authorization] enter";
+                //логика, вызов сервисов
+                next(ctx);
+                qDebug() << "[Authorization] exit";
+            }
+            catch (...)
+            {
+                qDebug() << "[Authorization] abort";
+                ctx.abort();
+            }
+        }
+    }
 };
+
+}
 
 #endif // AUTHORIZATION_H

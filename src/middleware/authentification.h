@@ -1,26 +1,44 @@
-#ifndef AUTHENTIFICATION_H
-#define AUTHENTIFICATION_H
+#ifndef MIDDLEWARE_AUTHENTIFICATION_H
+#define MIDDLEWARE_AUTHENTIFICATION_H
 
-#include <QObject>
 #include "imiddleware.h"
-#include "../service/service.h"
+#include "../service/authentification.h"
 
-class AuthentificationMiddleware : public QObject, public IMiddleware
+namespace Middlewares{
+
+class Authentification : public IMiddleware
 {
-    Q_OBJECT
 public:
-    explicit AuthentificationMiddleware(QObject *parent = nullptr) {}
+    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
+        if (!ctx.isAborted)
+        {
+            try
+            {
+                qDebug() << "[Authentification] enter";
+                //логика, вызов сервисов
+                Services::Authentification* a = static_cast<Services::Authentification*>(ctx.services.getRaw(typeid(Services::Authentification).hash_code()));
 
-signals:
+                next(ctx);
+                qDebug() << "[Authentification] exit";
+            }
+            catch (...)
+            {
+                qDebug() << "[Authentification] abort";
+                ctx.abort();
+            }
+        }
+    }
 };
 
-class AuthentificationService : public QObject, public IService
-{
-    Q_OBJECT
-public:
-    explicit AuthentificationService(QObject *parent = nullptr) {}
-
-signals:
-};
+}
 
 #endif // AUTHENTIFICATION_H
+//AuthorizeAttribute - для авторизации
+
+/*
+Клиент отправляет логин/пароль.
+Сервер проверяет и создаёт серверную сессию (в БД, в памяти, Redis).
+Сервер отвечает SetSessionId: sessionId=XYZ; HttpOnly; Secure. - sessionId можно отменить, это нормальный идентификатор
+Клиент автоматически отправляет это cookie в каждом запросе.
+Сервер берёт sessionId → находит запись в storage → узнаёт пользователя.
+*/

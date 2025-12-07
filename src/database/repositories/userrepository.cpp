@@ -2,11 +2,8 @@
 
 #include <QSqlQuery>
 #include <QSqlError>
+using namespace Database;
 
-UserRepository::UserRepository(QSqlDatabase db)
-    : m_db(db.isValid() ? db : QSqlDatabase::database())
-{
-}
 
 User UserRepository::mapUser(const QSqlQuery &query)
 {

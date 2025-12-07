@@ -3,7 +3,7 @@
 #include <QJsonObject>
 #include "user.h"
 #include "sessioncontext.h"
-#include "../service/service.h"
+#include "../service/iservice.h"
 
 class MessageContext;
 
@@ -11,22 +11,26 @@ class IEndpoint {
 public:
     virtual ~IEndpoint() = default;
 
-    virtual void invoke(MessageContext& ctx);
+    virtual void invoke(MessageContext& ctx){};
 };
 
 class EndpointRegistry
 {
 public:
-    void registerEndpoint(const QString& name, QSharedPointer<IEndpoint> ep)
-    { endpoints[name] = ep; }
+    void registerEndpoint(const QString& name, std::unique_ptr<IEndpoint> ep)
+    { endpoints[name] = std::move(ep); }
 
-    QSharedPointer<IEndpoint> getEndpoint(const QString& name)
-    { return endpoints.value(name, nullptr); }
+    IEndpoint* getEndpoint(const QString& name)
+    {
+        auto it = endpoints.find(name);
+        if (it == endpoints.end())
+            return nullptr;
 
+        return it->second.get();
+    }
 private:
-    QHash<QString, QSharedPointer<IEndpoint>> endpoints;
+    std::unordered_map<QString, std::unique_ptr<IEndpoint>> endpoints;
 };
-
 
 class MessageContext
 {
@@ -35,8 +39,8 @@ public:
         : services(std::move(services))
         , endpoints(endpoints)
     {}
-    bool aborted = false;
-    void abort() { aborted = true; }
+    bool isAborted = false;
+    void abort() { isAborted = true; }
     QJsonObject jsonRequest;
     QJsonObject jsonResponce;
     QUuid connection;

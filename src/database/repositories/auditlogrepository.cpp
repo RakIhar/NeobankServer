@@ -1,6 +1,6 @@
 #include "auditlogrepository.h"
 
-
+using namespace Database;
 #include <QJsonDocument>
 #include <QVariant>
 
@@ -11,10 +11,7 @@ QString uuidToString(const QUuid &id)
 }
 }
 
-AuditLogRepository::AuditLogRepository(QSqlDatabase db)
-    : m_db(db.isValid() ? db : QSqlDatabase::database())
-{
-}
+
 
 AuditLogEntry AuditLogRepository::mapEntry(const QSqlQuery &query)
 {

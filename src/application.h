@@ -23,18 +23,16 @@ public:
     void start() { m_host.start(); }
     void stop() { m_host.stop();}
     void build(RequestDelegate endpoint) { m_requestDelegate = m_pipelineBuilder.build(endpoint); }
-    void useEndpoint(QString name, QSharedPointer<IEndpoint> e) { m_endpoints.registerEndpoint(name, e); }
+    void useEndpoint(QString name, std::unique_ptr<IEndpoint> e) { m_endpoints.registerEndpoint(name, std::move(e)); }
     void useMiddleware(std::unique_ptr<IMiddleware> m) { m_pipelineBuilder.addMiddleware(std::move(m)); }
-    template<typename TService, typename TImpl>
-    void useService(ServiceType type) { m_serviceProvider->addService<TService, TImpl>(type); }
-    template<typename TService>
-    void useService(ServiceType type) { m_serviceProvider->addService<TService>(type); }
+    template<typename TService, typename... TDeps>
+    void useService(ServiceType type) { m_serviceProvider->addService<TService, TDeps...>(type); }
 private:
     TransportLayer m_host;
     RequestDelegate m_requestDelegate;
     PipeLineBuilder m_pipelineBuilder;
     EndpointRegistry m_endpoints;
-    ServiceProvider* m_serviceProvider;
+    ServiceRoot* m_serviceProvider;
 signals:
 };
 

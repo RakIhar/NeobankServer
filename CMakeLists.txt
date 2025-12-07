@@ -119,10 +119,16 @@ add_executable(NeobankServer ${SOURCES}
   src/middleware/logger.h src/middleware/logger.cpp
   src/middleware/session.h src/middleware/session.cpp
   src/application.h src/application.cpp
-  src/service/service.h src/service/service.cpp
+  src/service/iservice.h src/service/iservice.cpp
 
 
   src/middleware/imiddleware.h
+
+  src/service/authentification.h src/service/authentification.cpp
+
+  src/tests2.h src/tests2.cpp
+  src/middleware/exception.h src/middleware/exception.cpp
+  src/test3.h src/test3.cpp
 
 
 )

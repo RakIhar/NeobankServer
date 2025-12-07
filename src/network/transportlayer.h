@@ -36,7 +36,6 @@ private:
     QSslServer* m_sslServer;
     QSet<QPointer<QSslSocket>> m_activeSockets;
     void initializeServerConfig();
-
 };
 
 #endif // TRANSPORTLAYER_H

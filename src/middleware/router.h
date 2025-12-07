@@ -1,16 +1,37 @@
 #ifndef ROUTER_H
 #define ROUTER_H
 
-#include <QObject>
 #include "imiddleware.h"
 
-class Router : public QObject, public IMiddleware
-{
-    Q_OBJECT
-public:
-    explicit Router(QObject *parent = nullptr);
+namespace Middlewares{
 
-signals:
+class Router : public IMiddleware
+{
+public:
+    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
+        if (!ctx.isAborted)
+        {
+            try
+            {
+                qDebug() << "[Router] enter";
+
+                QString route = ctx.jsonRequest["endpoint"].toString();
+
+                ctx.currentEndpoint = ctx.endpoints.getEndpoint(route);
+
+                next(ctx);
+
+                qDebug() << "[Router] exit";
+            }
+            catch (...)
+            {
+                qDebug() << "[Router] abort";
+                ctx.abort();
+            }
+        }
+    }
 };
+
+}
 
 #endif // ROUTER_H

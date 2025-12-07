@@ -1,7 +1,7 @@
 #include "authsessionrepository.h"
 
 #include <QVariant>
-
+using namespace Database;
     namespace {
     QString uuidToString(const QUuid &id)
     {
@@ -9,10 +9,7 @@
     }
 }
 
-AuthSessionRepository::AuthSessionRepository(QSqlDatabase db)
-    : m_db(db.isValid() ? db : QSqlDatabase::database())
-{
-}
+
 
 QString AuthSessionRepository::toStateString(AuthSessionState state)
 {

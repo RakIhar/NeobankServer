@@ -15,5 +15,5 @@ Application::Application(QObject *parent) : QObject{parent}
                 m_host.sendMessage(reply.first, reply.second);
             });
 
-    m_serviceProvider = new ServiceProvider();
+    m_serviceProvider = new ServiceRoot();
 }

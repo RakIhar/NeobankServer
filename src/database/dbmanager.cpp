@@ -5,19 +5,12 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QStandardPaths>
-
+using namespace Database;
 namespace {
     constexpr auto CONNECTION_NAME = "neobank_pg_conn";
 }
 
-DataBaseManager *DataBaseManager::instance()
-{
-    static DataBaseManager inst;
-    return &inst;
-}
-
-DataBaseManager::DataBaseManager(QObject *parent)
-    : QObject{parent}
+DataBaseManager::DataBaseManager()
 {
     if (!loadConfig())
         qCritical() << "Не удалось загрузить конфигурацию БД:" << m_lastError;

@@ -1,12 +1,12 @@
-#ifndef SESSION_H
-#define SESSION_H
+#ifndef EXCEPTION_H
+#define EXCEPTION_H
 
 #include "imiddleware.h"
 #include "../service/iservice.h"
 
 namespace Middlewares{
 
-class Session : public IMiddleware
+class Exception : public IMiddleware
 {
 public:
     void invoke(MessageContext& ctx, const RequestDelegate& next) override {
@@ -14,14 +14,14 @@ public:
         {
             try
             {
-                qDebug() << "[Session] enter";
+                qDebug() << "[Exception] enter";
                 //логика, вызов сервисов
                 next(ctx);
-                qDebug() << "[Session] exit";
+                qDebug() << "[Authorization] exit";
             }
             catch (...)
             {
-                qDebug() << "[Session] abort";
+                qDebug() << "[Exception] abort";
                 ctx.abort();
             }
         }
@@ -29,9 +29,4 @@ public:
 };
 
 }
-
-/*
-Если сессии нет - создать сессию с SessionId
-*/
-
-#endif // SESSION_H
+#endif // EXCEPTION_H

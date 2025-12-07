@@ -5,12 +5,19 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include "../models/transaction.h"
+#include "../../service/iservice.h"
 
-class TransactionRepository
+#include "../dbmanager.h"
+
+namespace Database
+{
+
+class TransactionRepository : public IService
 {
 public:
-    explicit TransactionRepository(QSqlDatabase db = QSqlDatabase());
-
+    explicit TransactionRepository(QSqlDatabase db = QSqlDatabase()) : m_db(db){}
+    explicit TransactionRepository(DataBaseManager* dbm) : m_db(dbm->database())
+        { qDebug() << "ctor TransactionRepository"; };
     std::optional<Transaction> addTransaction(const Transaction &t);
     QList<Transaction> getByAccount(qint64 accountId) const;
     QList<Transaction> getRecentForUser(qint64 userId, int limit = 20) const;
@@ -20,5 +27,7 @@ private:
 
     static Transaction mapTransaction(const QSqlQuery &query);
 };
+
+}
 
 #endif // TRANSACTIONREPOSITORY_H
