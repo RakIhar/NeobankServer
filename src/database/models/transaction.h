@@ -20,9 +20,12 @@ struct Transaction
     QJsonObject metadata;
     QDateTime created_at;
 };
-#endif // TRANSACTION_H
 
 }
+
+#endif // TRANSACTION_H
+
+
 /*
 neobank=# \d+ transactions
                                                                     Table "public.transactions"

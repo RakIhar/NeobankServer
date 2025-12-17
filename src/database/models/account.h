@@ -18,9 +18,8 @@ struct Account
     QDateTime updated_at;
 };
 
-#endif // ACCOUNT_H
-
 }
+#endif // ACCOUNT_H
 
 /*
 neobank=# \d+ accounts

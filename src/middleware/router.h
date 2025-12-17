@@ -14,9 +14,10 @@ public:
         {
             try
             {
+                using namespace Common;
                 qDebug() << "[Router] enter";
 
-                QString route = ctx.jsonRequest[Common::toStr(Common::JsonField::Type)].toString();
+                QString route = ctx.jsonRequest[toStr(JsonField::Type)].toString();
 
                 ctx.currentEndpoint = ctx.endpoints.getEndpoint(route);
 

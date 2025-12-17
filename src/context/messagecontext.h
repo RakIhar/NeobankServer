@@ -1,10 +1,11 @@
 #ifndef MESSAGECONTEXT_H
 #define MESSAGECONTEXT_H
 #include <QJsonObject>
-#include "user.h"
+#include "usercontext.h"
 #include "sessioncontext.h"
 #include "../service/iservice.h"
 #include "../endpoint/iendpoint.h"
+#include "connectioncontext.h"
 
 class MessageContext
 {
@@ -17,7 +18,7 @@ public:
     void abort() { isAborted = true; }
     QJsonObject jsonRequest;
     QJsonObject jsonResponce;
-    QUuid connection;
+    Context::Connection connection;
     Context::User user;
     Context::Session session;
     QUuid requestId;

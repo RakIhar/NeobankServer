@@ -14,58 +14,93 @@ find_package(PostgreSQL REQUIRED)
 
 set(SOURCES
   src/main.cpp
-  src/common/constants.h
+  src/application.h
+  src/application.cpp
   src/test3.h
-  src/pipeline/pipelinebuilder.h src/pipeline/pipelinebuilder.cpp
-  src/application.h src/application.cpp
+  src/readme.md
 
-  src/network/socketwrapper.h src/network/socketwrapper.cpp
-  src/network/sessionmanager.h src/network/sessionmanager.cpp
+  src/common/constants.h
+
+  src/pipeline/pipelinebuilder.h src/pipeline/pipelinebuilder.cpp
+
+  src/network/sessionmanager.h
+  src/network/sessionmanager.cpp
+  src/network/socketwrapper.h
+  src/network/socketwrapper.cpp
   src/network/transportlayer.h
   src/network/transportlayer.cpp
 
-  src/context/contextwrapper.h src/context/contextwrapper.cpp
+  src/context/contextwrapper.h
+  src/context/contextwrapper.cpp
   src/context/messagecontext.h
-  src/context/user.h src/context/user.cpp
-  src/context/sessioncontext.h src/context/sessioncontext.cpp
-  src/context/messagecontext.h src/context/messagecontext.cpp
 
+  src/context/sessioncontext.h
+
+  src/context/usercontext.h
+
+
+  #database start
   src/database/dbmanager.h
   src/database/dbmanager.cpp
+
   src/database/models/account.h
+  src/database/models/auditlogentry.h
+  src/database/models/authsession.h
   src/database/models/transaction.h
   src/database/models/user.h
-  src/database/models/authsession.h
-  src/database/models/auditlogentry.h
+
   src/database/repositories/accountrepository.h
   src/database/repositories/accountrepository.cpp
+  src/database/repositories/auditlogrepository.h
+  src/database/repositories/auditlogrepository.cpp
+  src/database/repositories/authsessionrepository.h
+  src/database/repositories/authsessionrepository.cpp
   src/database/repositories/transactionrepository.h
   src/database/repositories/transactionrepository.cpp
   src/database/repositories/userrepository.h
   src/database/repositories/userrepository.cpp
-  src/database/repositories/authsessionrepository.h
-  src/database/repositories/authsessionrepository.cpp
-  src/database/repositories/auditlogrepository.h
-  src/database/repositories/auditlogrepository.cpp
+  #database end
 
-  src/middleware/imiddleware.h
-  src/middleware/router.h src/middleware/router.cpp
-  src/middleware/authentification.h src/middleware/authentification.cpp
-  src/middleware/authorization.h src/middleware/authorization.cpp
-  src/middleware/endpointinvoker.h src/middleware/endpointinvoker.cpp
-  src/middleware/logger.h src/middleware/logger.cpp
-  src/middleware/session.h src/middleware/session.cpp
-  src/middleware/exception.h src/middleware/exception.cpp
+  src/endpoint/iendpoint.h #
+  src/endpoint/accountcreate.h
+  src/endpoint/accountcreate.cpp
+  src/endpoint/accountlist.h
+  src/endpoint/accountlist.cpp
+  src/endpoint/login.h
+  src/endpoint/login.cpp
+  src/endpoint/register.h
+  src/endpoint/register.cpp
+  src/endpoint/transactioncreate.h
+  src/endpoint/transactioncreate.cpp
+  src/endpoint/transactionlist.h
+  src/endpoint/transactionlist.cpp
 
-  src/service/authentification.h src/service/authentification.cpp
-  src/service/session.h src/service/session.cpp
-  src/service/iservice.h src/service/iservice.cpp
+  src/middleware/imiddleware.h #
+  src/middleware/authentification.h
+  src/middleware/authentification.cpp
+  src/middleware/authorization.h
+  src/middleware/authorization.cpp
+  src/middleware/endpointinvoker.h
+  src/middleware/endpointinvoker.cpp
+  src/middleware/exception.h
+  src/middleware/exception.cpp
+  src/middleware/logger.h
+  src/middleware/logger.cpp
+  src/middleware/router.h
+  src/middleware/router.cpp
+  src/middleware/session.h
+  src/middleware/session.cpp
+
+  src/service/iservice.h #
+  src/service/authentification.h
+  src/service/authentification.cpp
+  src/service/session.h
+  src/service/session.cpp
 )
 
 add_executable(NeobankServer ${SOURCES}
-  src/endpoint/login.h src/endpoint/login.cpp
-  src/endpoint/register.h src/endpoint/register.cpp
-  src/endpoint/iendpoint.h)
+  src/context/connectioncontext.h
+  src/common/converters.h)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 

@@ -128,6 +128,39 @@ bool Authentification::logout(const QUuid& sessionId)
     return updated;
 }
 
+std::optional<Models::User> Authentification::registerUser(const QString &username,
+                                                           const QString &password,
+                                                           const QString &email,
+                                                           const QString &phone)
+{
+    const QString normalizedUsername = username.trimmed();
+    if (normalizedUsername.isEmpty() || password.isEmpty()) {
+        qDebug() << "[Authentification] Username or password is empty";
+        return std::nullopt;
+    }
+
+    if (m_userRepo->findByUsername(normalizedUsername).has_value()) {
+        qDebug() << "[Authentification] Username already exists:" << normalizedUsername;
+        return std::nullopt;
+    }
+
+    Models::User newUser;
+    newUser.username = normalizedUsername;
+    newUser.passwordHash = hashPassword(password);
+    newUser.email = email.trimmed();
+    newUser.phone = phone.trimmed();
+    newUser.status = QStringLiteral("active");
+
+    auto created = m_userRepo->create(newUser);
+    if (!created.has_value()) {
+        qDebug() << "[Authentification] Failed to create user:" << normalizedUsername;
+        return std::nullopt;
+    }
+
+    qDebug() << "[Authentification] User registered:" << normalizedUsername;
+    return created;
+}
+
 std::optional<Models::User> Authentification::getUserBySession(const QUuid& sessionId)
 {
     std::optional<Models::AuthSession> sessionOpt = validateSession(sessionId);

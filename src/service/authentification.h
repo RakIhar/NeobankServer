@@ -35,6 +35,11 @@ public:
     std::optional<Models::AuthSession> validateSessionByToken(const QString& token);
     
     bool logout(const QUuid& sessionId);
+
+    std::optional<Models::User> registerUser(const QString& username,
+                                             const QString& password,
+                                             const QString& email = "",
+                                             const QString& phone = "");
     
     std::optional<Models::User> getUserBySession(const QUuid& sessionId);
 };

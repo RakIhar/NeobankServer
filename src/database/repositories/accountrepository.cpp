@@ -16,7 +16,7 @@ using namespace Database;
 std::optional<Models::Account> AccountRepository::create(const Models::Account &account)
 {
     QSqlQuery q(m_db);
-    q.prepare("INSERT INTO account (user_id, iban, balance, currency, status)"
+    q.prepare("INSERT INTO accounts (user_id, iban, balance, currency, status)"
               "VALUES (:user_id, :iban, :balance, :currency, :status)"
               "RETURNING id, user_id, iban, balance, currency, status, created_at, updated_at");
     q.bindValue(":user_id", account.user_id);
@@ -55,7 +55,7 @@ std::optional<Models::Account> AccountRepository::getById(qint64 id) const
 {
     QSqlQuery q(m_db);
     q.prepare("SELECT id, user_id, iban, balance, currency, status, created_at, updated_at "
-              "FROM account WHERE id = :id");
+              "FROM accounts WHERE id = :id");
     q.bindValue(":id", id);
     if (!q.exec() || !q.next())
         return std::nullopt;
@@ -67,10 +67,10 @@ QList<Models::Account> AccountRepository::getByUser(qint64 user_id) const
     QList<Models::Account> accounts;
     QSqlQuery q(m_db);
     q.prepare("SELECT id, user_id, iban, balance, currency, status, created_at, updated_at "
-              "FROM account WHERE user_id = :user_id");
+              "FROM accounts WHERE user_id = :user_id");
     q.bindValue(":user_id", user_id);
     if (q.exec())
-        while(q.next());
+        while(q.next())
             accounts.append(mapAccount(q));
     return accounts;
 }

@@ -11,7 +11,7 @@ class User
 {
 public:
     User(){};
-    qint64 id = 0;
+    qint64 user_id = 0;
     QString username;
 };
 

@@ -2,6 +2,7 @@
 #define SESSION_H
 
 #include "imiddleware.h"
+
 #include "../service/session.h"
 
 namespace Middlewares{
@@ -15,7 +16,8 @@ public:
             try
             {
                 qDebug() << "[Session] enter";
-                //TODO дописать
+                //TODO
+                //есть проблемы с разграничением auth_session и logic_session - в коде оба перепутаны, поэтому пофиг
                 next(ctx);
                 qDebug() << "[Session] exit";
             }

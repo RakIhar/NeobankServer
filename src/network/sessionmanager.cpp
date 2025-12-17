@@ -28,7 +28,7 @@ void ConnectionManager::CreateConnection(QSslSocket *socket)
         if (!it.value().isNull())
             it.value()->deleteLater();
 
-        m_socketConnections.erase(it); //CHECK
+        m_socketConnections.erase(it);
         emit closed(sessionId);
     });
 

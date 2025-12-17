@@ -9,7 +9,6 @@ namespace Services {
 class Session : public IService
 {
     Database::AuthSessionRepository* m_repAuthSession;
-    // QHash<QUuid, std::unique_ptr<SessionContext>> sessions;
     std::unordered_map<QString, std::unique_ptr<Context::Session>> sessions;
 public:
     explicit Session(Database::AuthSessionRepository* repAuthSession)
@@ -18,10 +17,10 @@ public:
     Context::Session* createSession()
     {
         std::unique_ptr<Context::Session> ctx = std::make_unique<Context::Session>();
-        ctx->sessionId = QUuid::createUuid();
+        ctx->session_id = QUuid::createUuid();
         ctx->isAvailable = true;
         Context::Session* result = ctx.get();
-        sessions[ctx->sessionId.toString()] = std::move(ctx);
+        sessions[ctx->session_id.toString()] = std::move(ctx);
         return result;
     }
 
@@ -33,17 +32,16 @@ public:
         return sessions[sessionId.toString()].get();
     }
 
-    void removeSession(QUuid sessionId) //NEW
+    void removeSession(QUuid sessionId)
     {
         sessions.erase(sessionId.toString());
     }
 
-    bool hasSession(QUuid sessionId) const //NEW
+    bool hasSession(QUuid sessionId) const
     {
         auto it = sessions.find(sessionId.toString());
         return it != sessions.end();
     }
-
 };
 
 }

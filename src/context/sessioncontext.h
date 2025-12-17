@@ -11,7 +11,8 @@ class Session
 public:
     Session() {};
     bool isAvailable;
-    QUuid sessionId;
+    QUuid session_id;
+    QString token;
     QHash<QVariant, QVariant> items;
 };
 

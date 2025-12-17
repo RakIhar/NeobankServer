@@ -15,6 +15,8 @@ private:
     
     bool requiresAuthentication(const QString& endpointName) const;
     
+    bool isAuthorized(MessageContext& ctx);
+
 public:
     void invoke(MessageContext& ctx, const RequestDelegate& next) override {
         if (!ctx.isAborted)
@@ -22,45 +24,12 @@ public:
             try
             {
                 qDebug() << "[Authorization] enter";
-                using namespace Common;
-                QString prType = ctx.jsonRequest[toStr(JsonField::Type)].toString();
-                
-                if (requiresAuthentication(prType)) {
-                    if (!ctx.session.isAvailable)
-                    {
-                        qDebug() << "[Authorization] Authentication required but session not available";
-                        ctx.jsonResponce[toStr(JsonField::Type)] = toStr(ProtocolType::Authorization);
-                        ctx.jsonResponce[toStr(JsonField::Result)] = false;
-                        ctx.jsonResponce[toStr(JsonField::Reason)] = "Authentication required";
-                        ctx.jsonResponce[toStr(JsonField::ReasonCode)] = "UNAUTHORIZED";
-                        ctx.abort();
-                        return;
-                    }
 
-                    if (!ctx.user.id)
-                    {
-                        qDebug() << "[Authorization] User not found in context";
-                        ctx.jsonResponce[toStr(JsonField::Type)] = toStr(ProtocolType::Authorization);
-                        ctx.jsonResponce[toStr(JsonField::Result)] = false;
-                        ctx.jsonResponce[toStr(JsonField::Reason)] = "User not found";
-                        ctx.jsonResponce[toStr(JsonField::ReasonCode)] = "UNAUTHORIZED";
-                        ctx.abort();
-                        return;
-                    }
-                    
-                    qDebug() << "[Authorization] User authenticated, user_id:" << ctx.items["user_id"].toLongLong();
-                    
-                    // Проверка ролей
-                    // Role requiredRole = getRequiredRole(endpointName);
-                    // if (!hasRole(ctx, requiredRole)) {
-                    //     ctx.jsonResponce["success"] = false;
-                    //     ctx.jsonResponce["error"] = "Insufficient permissions";
-                    //     ctx.abort();
-                    //     return;
-                    // }
-                }
-                
-                next(ctx);
+                if(isAuthorized(ctx))
+                    next(ctx);
+                else
+                    ctx.abort();
+
                 qDebug() << "[Authorization] exit";
             }
             catch (...)
@@ -71,7 +40,14 @@ public:
         }
     }
 };
-
+/*std::optional<Models::User> userOpt = authService->getUserBySession(authSession.id);
+            if (userOpt.has_value()) {
+                Models::User dbUser = userOpt.value();
+                ctx.user.user_id = dbUser.id;
+                ctx.user.username = dbUser.username;
+                //CHECK: бесполезно, это же endpoint, надо почекать в middleware
+                //CHECK: мейби добавить полей в User
+}*/
 }
 
 #endif // AUTHORIZATION_H
