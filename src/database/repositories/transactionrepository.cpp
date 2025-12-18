@@ -21,17 +21,25 @@ std::optional<Models::Transaction> TransactionRepository::addTransaction(const M
     q.prepare("INSERT INTO transactions (account_id, counterparty_account_id, amount, currency, type, "
               "description, status, metadata) "
               "VALUES (:account_id, :counterparty_account_id, :amount, :currency, :type, "
-              ":description, :status, :metadata) "
+              ":description, :status, :metadata::jsonb) " // ::jsonb
               "RETURNING id, account_id, counterparty_account_id, amount, currency, type, description, "
               "status, metadata, created_at");
     q.bindValue(":account_id", t.account_id);
-    q.bindValue(":counterparty_account_id", t.counterparty_account_id);
+
+    if (t.counterparty_account_id.has_value()) {
+        q.bindValue(":counterparty_account_id", t.counterparty_account_id.value());
+    } else {
+        q.bindValue(":counterparty_account_id", QVariant(QMetaType::fromType<qint64>()));
+    }
+    // q.bindValue(":counterparty_account_id", t.counterparty_account_id);
     q.bindValue(":amount", t.amount);
     q.bindValue(":currency", t.currency);
     q.bindValue(":type", t.type);
     q.bindValue(":description", t.description);
     q.bindValue(":status", t.status);
-    q.bindValue(":metadata", QJsonDocument(t.metadata).toJson(QJsonDocument::Compact));
+    QString metadataStr = QJsonDocument(t.metadata).toJson(QJsonDocument::Compact);
+    q.bindValue(":metadata", metadataStr);
+    // q.bindValue(":metadata", QJsonDocument(t.metadata).toJson(QJsonDocument::Compact));
 
     if (!q.exec())
     {

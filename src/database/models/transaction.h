@@ -11,7 +11,7 @@ struct Transaction
 {
     qint64 id = 0;
     qint64 account_id = 0;
-    qint64 counterparty_account_id = 0;
+    std::optional<qint64> counterparty_account_id = 0;
     QString amount = "0.00"; //оказывается с++ не имеет типа decimal
     QString currency;
     QString type;

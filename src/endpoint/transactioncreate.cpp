@@ -28,14 +28,14 @@ void TransactionCreate::fromSystem(MessageContext &ctx, qint64 toId)
         {
             Models::Transaction t;
             t.account_id                = toAcc.id;
-            t.counterparty_account_id   = 0;
+            t.counterparty_account_id   = std::nullopt;
             t.amount                    = amount;
             t.currency                  = currency;
             t.type                      = QStringLiteral("credit");
             t.description               = description;
             t.status                    = QStringLiteral("done");
 
-            const auto created = txRepo->addTransaction(t);
+            const std::optional<Models::Transaction> created = txRepo->addTransaction(t);
             if (created.has_value())
                 createTrCreateSuccessResponce(ctx.jsonResponce, created.value());
             else
