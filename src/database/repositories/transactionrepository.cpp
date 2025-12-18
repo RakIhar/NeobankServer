@@ -98,35 +98,26 @@ Models::Transaction TransactionRepository::mapTransaction(const QSqlQuery &query
     using namespace Common;
     Models::Transaction t;
 
-    t.id         = query.value(toStr(JsonField::TransactionId)).toLongLong();
-    t.account_id = query.value(toStr(JsonField::AccountId)).toLongLong();
-    t.amount     = query.value(toStr(JsonField::Amount)).toString();
-    t.currency   = query.value(toStr(JsonField::Currency)).toString();
-    t.type       = query.value(toStr(JsonField::Type)).toString();
+    t.id         = query.value("id").toLongLong();
+    t.account_id = query.value("account_id").toLongLong();
+    t.amount     = query.value("amount").toString();
+    t.currency   = query.value("currency").toString().trimmed();
+    t.type       = query.value("type").toString();
 
-    QVariant cpVar              = query.value(toStr(JsonField::CounterpartyId));
-    t.counterparty_account_id   = cpVar.isNull()
-                                ? std::nullopt
-                                : std::make_optional(cpVar.toLongLong());
+    QVariant cpVar = query.value("counterparty_account_id");
+    t.counterparty_account_id = cpVar.isNull() ? std::nullopt : std::make_optional(cpVar.toLongLong());
 
-    QVariant descVar            = query.value(toStr(JsonField::Reason));
-    t.description               = descVar.isNull()
-                                ? std::nullopt
-                                : std::make_optional(descVar.toString());
+    QVariant descVar = query.value("description");
+    t.description = descVar.isNull()           ? std::nullopt : std::make_optional(descVar.toString());
 
-    QVariant statusVar          = query.value(toStr(JsonField::Status));
-    t.status                    = statusVar.isNull()
-                                ? std::nullopt
-                                : std::make_optional(statusVar.toString());
+    QVariant statusVar = query.value("status");
+    t.status = statusVar.isNull()              ? std::nullopt : std::make_optional(statusVar.toString());
 
-    QVariant dateVar            = query.value(toStr(JsonField::CreatedAt));
-    t.created_at                = dateVar.isNull()
-                                ? std::nullopt
-                                : std::make_optional(dateVar.toDateTime());
+    QVariant dateVar = query.value("created_at");
+    t.created_at = dateVar.isNull()            ? std::nullopt : std::make_optional(dateVar.toDateTime());
 
-    QVariant metadataVar = query.value(toStr(JsonField::Metadata));
-    if (!metadataVar.isNull())
-    {
+    QVariant metadataVar = query.value("metadata");
+    if (!metadataVar.isNull()) {
         QJsonDocument doc = QJsonDocument::fromJson(metadataVar.toByteArray());
         if (doc.isObject())
             t.metadata = doc.object();

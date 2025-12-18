@@ -20,7 +20,7 @@ void TransactionCreate::fromSystem(MessageContext &ctx, qint64 toId)
         const QString description = request.value(toStr(JsonField::Reason)).toString();
 
         Models::Account toAcc = toAccOpt.value();
-        const qint64 oldB     = Money::toCents(toAcc.balance);
+        const qint64 oldB     = Money::toCents(toAcc.balance.value_or("0.00"));
         const qint64 add      = Money::toCents(amount);
         const qint64 newB     = oldB + add;
 
@@ -61,12 +61,12 @@ void TransactionCreate::betweenAccounts(MessageContext &ctx, qint64 fromId, qint
     {
         Models::Account fromAcc = fromAccOpt.value();
         Models::Account toAcc   = toAccOpt.value();
-        const qint64 fromBal    = Money::toCents(fromAcc.balance);
+        const qint64 fromBal    = Money::toCents(fromAcc.balance.value_or("0.00"));
         const qint64 transfer   = Money::toCents(amount);
         if (transfer > 0 && fromBal >= transfer)
         {
             const qint64 newFrom = fromBal - transfer;
-            const qint64 newTo = Money::toCents(toAcc.balance) + transfer;
+            const qint64 newTo = Money::toCents(toAcc.balance.value_or("0.00")) + transfer;
             if (accRepo->updateBalance(fromAcc.id, Money::fromCents(newFrom)) &&
                 accRepo->updateBalance(toAcc.id,   Money::fromCents(newTo)))
             {

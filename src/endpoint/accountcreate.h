@@ -5,7 +5,7 @@
 #include "../context/messagecontext.h"
 #include "../database/models/account.h"
 #include "../common/constants.h"
-
+#include "../common/serializers.h"
 namespace Endpoints {
 
 class AccountCreate : public IEndpoint {
@@ -13,12 +13,7 @@ class AccountCreate : public IEndpoint {
     {
         using namespace Common;
         QJsonObject accObj;
-        accObj[toStr(JsonField::AccountId)] = acc.id;
-        accObj[toStr(JsonField::Iban)]      = acc.iban;
-        accObj[toStr(JsonField::Balance)]   = acc.balance;
-        accObj[toStr(JsonField::Currency)]  = acc.currency;
-        accObj[toStr(JsonField::Status)]    = acc.status;
-        accObj[toStr(JsonField::CreatedAt)] = acc.created_at.toString(Qt::ISODate);
+        serialize(accObj, acc);
         responce[toStr(JsonField::Type)]    = toStr(ProtocolType::AccCreate);
         responce[toStr(JsonField::Result)]  = true;
         responce[toStr(JsonField::AccObj)]  = accObj;

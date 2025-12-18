@@ -8,14 +8,14 @@ namespace Models {
 
 struct Account
 {
-    qint64 id = 0;
-    qint64 user_id = 0;
-    QString iban;
-    QString balance = "0.00";
-    QString currency;
-    QString status = QStringLiteral("active");
-    QDateTime created_at;
-    QDateTime updated_at;
+    qint64                   id         = 0;
+    qint64                   user_id    = 0;
+    std::optional<QString>   iban       = std::nullopt;
+    std::optional<QString>   balance    = "0.00";
+    QString                  currency;
+    std::optional<QString>   status     = QStringLiteral("active");
+    std::optional<QDateTime> created_at = std::nullopt;
+    std::optional<QDateTime> updated_at = std::nullopt;
 };
 
 }
