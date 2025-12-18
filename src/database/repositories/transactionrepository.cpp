@@ -20,37 +20,43 @@ std::optional<Models::Transaction> TransactionRepository::addTransaction(const M
     QSqlQuery q(m_db);
     q.prepare("INSERT INTO transactions (account_id, counterparty_account_id, amount, currency, type, "
               "description, status, metadata) "
-              "VALUES (:account_id, :counterparty_account_id, :amount, :currency, :type, "
-              ":description, :status, :metadata::jsonb) " // ::jsonb
-              "RETURNING id, account_id, counterparty_account_id, amount, currency, type, description, "
-              "status, metadata, created_at");
-    q.bindValue(":account_id", t.account_id);
+              "VALUES (:acc_id, :cntr_id, :amount, :curr, :type, :desc, :status, :meta::jsonb) "
+              "RETURNING id, account_id, counterparty_account_id, amount, currency, type, "
+              "description, status, metadata, created_at");
 
-    if (t.counterparty_account_id.has_value()) {
-        q.bindValue(":counterparty_account_id", t.counterparty_account_id.value());
-    } else {
-        q.bindValue(":counterparty_account_id", QVariant(QMetaType::fromType<qint64>()));
-    }
-    // q.bindValue(":counterparty_account_id", t.counterparty_account_id);
+    q.bindValue(":acc_id", t.account_id);
     q.bindValue(":amount", t.amount);
-    q.bindValue(":currency", t.currency);
-    q.bindValue(":type", t.type);
-    q.bindValue(":description", t.description);
-    q.bindValue(":status", t.status);
-    QString metadataStr = QJsonDocument(t.metadata).toJson(QJsonDocument::Compact);
-    q.bindValue(":metadata", metadataStr);
-    // q.bindValue(":metadata", QJsonDocument(t.metadata).toJson(QJsonDocument::Compact));
+    q.bindValue(":curr",   t.currency);
+    q.bindValue(":type",   t.type);
 
-    if (!q.exec())
-    {
-        qWarning() << "TransactionRepository::addTransaction error" << q.lastError();
+    q.bindValue(":cntr_id", t.counterparty_account_id.has_value()
+                                ? QVariant::fromValue(t.counterparty_account_id.value())
+                                : QVariant(QMetaType::fromType<qint64>()));
+
+    q.bindValue(":desc", t.description.has_value()
+                                ? QVariant(t.description.value())
+                                : QVariant(QMetaType::fromType<QString>()));
+
+    q.bindValue(":status", t.status.has_value()
+                                ? QVariant(t.status.value())
+                                : QVariant("pending"));
+
+    QByteArray metadataBytes = "{}";
+    if (t.metadata.has_value() && !t.metadata->isEmpty()) {
+        metadataBytes = QJsonDocument(t.metadata.value()).toJson(QJsonDocument::Compact);
+    }
+    q.bindValue(":meta", QString::fromUtf8(metadataBytes));
+
+    if (!q.exec()) {
+        qWarning() << "TransactionRepository::addTransaction error:" << q.lastError().text();
         return std::nullopt;
     }
 
-    if (!q.next())
-        return std::nullopt;
+    if (q.next()) {
+        return mapTransaction(q);
+    }
 
-    return mapTransaction(q);
+    return std::nullopt;
 }
 
 QList<Models::Transaction> TransactionRepository::getByAccount(qint64 account_id) const

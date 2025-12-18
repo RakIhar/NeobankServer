@@ -16,7 +16,7 @@ set(SOURCES
   src/main.cpp
   src/application.h
   src/application.cpp
-  src/test3.h
+
   src/readme.md
 
   src/common/constants.h
@@ -100,7 +100,8 @@ set(SOURCES
 
 add_executable(NeobankServer ${SOURCES}
   src/context/connectioncontext.h
-  src/common/converters.h)
+  src/common/converters.h
+  src/common/serializers.h)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 

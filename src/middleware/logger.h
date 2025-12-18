@@ -15,9 +15,7 @@ public:
             try
             {
                 qDebug() << "[Logger] enter";
-                //лог до
                 next(ctx);
-                //лог после
                 qDebug() << "[Logger] exit";
             }
             catch (...)

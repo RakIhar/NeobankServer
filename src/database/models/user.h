@@ -20,8 +20,6 @@ struct User
 
 }
 
-
-
 #endif // USER_H
 
 /*

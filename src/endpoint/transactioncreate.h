@@ -7,6 +7,7 @@
 #include "../common/constants.h"
 #include "../database/repositories/transactionrepository.h"
 #include "../database/repositories/accountrepository.h"
+#include "../common/serializers.h"
 namespace Endpoints {
 
 class TransactionCreate : public IEndpoint {
@@ -17,14 +18,7 @@ class TransactionCreate : public IEndpoint {
     {
         using namespace Common;
         QJsonObject obj;
-        obj[toStr(JsonField::TransactionId)] = tr.id;
-        obj[toStr(JsonField::AccountId)]     = tr.account_id;
-        obj[toStr(JsonField::Amount)]        = tr.amount;
-        obj[toStr(JsonField::Currency)]      = tr.currency;
-        obj[toStr(JsonField::Type)]          = tr.type;
-        obj[toStr(JsonField::Reason)]        = tr.description;
-        obj[toStr(JsonField::Status)]        = tr.status;
-        obj[toStr(JsonField::CreatedAt)]     = tr.created_at.toString(Qt::ISODate);
+        serialize(obj, tr);
         responce[toStr(JsonField::Type)]     = toStr(ProtocolType::TrCreate);
         responce[toStr(JsonField::Result)]   = true;
         responce[toStr(JsonField::TrObj)]    = obj;

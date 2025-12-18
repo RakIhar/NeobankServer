@@ -16,8 +16,6 @@ public:
             try
             {
                 qDebug() << "[Session] enter";
-                //TODO
-                //есть проблемы с разграничением auth_session и logic_session - в коде оба перепутаны, поэтому пофиг
                 next(ctx);
                 qDebug() << "[Session] exit";
             }

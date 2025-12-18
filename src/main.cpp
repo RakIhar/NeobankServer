@@ -32,13 +32,21 @@
 
 int main(int argc, char *argv[])
 {
-    //TODO разграничить auth_session и logic_session
-    //TODO сделать многопоточность
-    //TODO дописать сервисы и эндпоинты, связанные конкретно с логикой банка
-    //TODO убрать различные REMOVE
-    //TODO в сервисах добавить nullptr
-    //TODO обдумать QVariant в TransactionCreate
-    //TODO обдумать переводы валют в TransactionCreate
+    //TODO
+    //Первостепенно:
+    //Улучшить transferDialog
+    //limit в list'ах
+    //Добавить переводы валют
+    //Исправить nullable в SQL
+
+    //Второстепенно:
+    //Улучшить транспортный уровень: user_agent и ip_address, безопасность
+    //разграничить auth_session и logic_session
+    //Сделать многопоточность
+    //Улучшить авторизацию и проверку ролей в ней
+    //Небольшой рефакторинг кода в клиенте
+    //добавить initRepos
+
     QCoreApplication a(argc, argv);
     a.setApplicationName("NeobankServer");
     a.setOrganizationName("R.I.Inc.");

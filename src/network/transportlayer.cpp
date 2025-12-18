@@ -35,7 +35,7 @@ TransportLayer::TransportLayer(QObject *parent)
     m_cleanupTimer.start();
 }
 
-void TransportLayer::initializeServerConfig() //TODO: implement certificates + configuration
+void TransportLayer::initializeServerConfig()
 {
     QFile certFile("../../certificates/server.crt");
     QFile keyFile("../../certificates/server.key");
@@ -65,14 +65,14 @@ void TransportLayer::initializeServerConfig() //TODO: implement certificates + c
 void TransportLayer::start()
 {
     constexpr quint16 PORT = 4433;
-    if (!m_sslServer->listen(QHostAddress::Any, PORT)) { //TODO: improve
+    if (!m_sslServer->listen(QHostAddress::Any, PORT)) {
         qWarning() << "Ошибка запуска сервера:" << m_sslServer->errorString();
     } else {
         qInfo() << QString("TLS 1.3 сервер слушает на порту %1").arg(PORT);
     }
 }
 
-void TransportLayer::stop() //TODO: IMPLEMENT
+void TransportLayer::stop()
 {
     m_sslServer->close();
 }
@@ -107,7 +107,7 @@ void TransportLayer::onEncryptedReady()
     m_activeSockets.remove(ssl);
 }
 
-void TransportLayer::cleanup() //TODO: remove or improve
+void TransportLayer::cleanup()
 {
     auto it = m_activeSockets.begin();
     while (it != m_activeSockets.end())
@@ -123,7 +123,7 @@ void TransportLayer::cleanup() //TODO: remove or improve
     }
 }
 
-void TransportLayer::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors) //TODO: IMPLEMENT
+void TransportLayer::onSslErrors(QSslSocket *socket, const QList<QSslError> &errors)
 {
     bool isThereCriticalError = false;
     for (const auto &e : errors)

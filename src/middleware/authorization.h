@@ -40,14 +40,7 @@ public:
         }
     }
 };
-/*std::optional<Models::User> userOpt = authService->getUserBySession(authSession.id);
-            if (userOpt.has_value()) {
-                Models::User dbUser = userOpt.value();
-                ctx.user.user_id = dbUser.id;
-                ctx.user.username = dbUser.username;
-                //CHECK: бесполезно, это же endpoint, надо почекать в middleware
-                //CHECK: мейби добавить полей в User
-}*/
+
 }
 
 #endif // AUTHORIZATION_H

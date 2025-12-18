@@ -50,16 +50,16 @@ bool Authorization::isAuthorized(MessageContext &ctx)
             return false;
         }
 
-        qDebug() << "[Authorization] User authenticated, user_id:" << ctx.items["user_id"].toLongLong(); //REMOVE
+        qDebug() << "[Authorization] User authenticated, user_id:" << ctx.user.user_id;
 
-        // Проверка ролей
-        // Role requiredRole = getRequiredRole(endpointName);
-        // if (!hasRole(ctx, requiredRole)) {
-        //     ctx.jsonResponce["success"] = false;
-        //     ctx.jsonResponce["error"] = "Insufficient permissions";
-        //     ctx.abort();
-        //     return;
-        // }
+        /*
+        Role requiredRole = getRequiredRole(endpointName);
+        if (!hasRole(ctx, requiredRole)) {
+            ctx.jsonResponce["success"] = false;
+            ctx.jsonResponce["error"] = "Insufficient permissions";
+            ctx.abort();
+            return;
+        }*/
     }
     return true;
 }

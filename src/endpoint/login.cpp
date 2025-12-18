@@ -21,12 +21,9 @@ void Endpoints::Login::invoke(MessageContext &ctx)
 
             QString username = request.value(toStr(JsonField::Username)).toString();
             QString password = request.value(toStr(JsonField::Password)).toString();
-            //CHECK: возможно transport layer будет возвращать user_agent и ip_address
-            //сейчас это заглушки
-            QString ipAddress = ctx.items.value("ip_address", "").toString();
-            QString userAgent = ctx.items.value("user_agent", "").toString();
-
-            std::optional<Models::AuthSession> sessionOpt = authService->authenticate(username, password, ipAddress, userAgent);
+            ctx.connection.userAgent = "";
+            ctx.connection.ipAddress = "";
+            std::optional<Models::AuthSession> sessionOpt = authService->authenticate(username, password, ctx.connection.ipAddress, ctx.connection.userAgent);
             if (sessionOpt.has_value())
             {
                 Models::AuthSession authSession = sessionOpt.value();

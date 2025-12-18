@@ -11,20 +11,19 @@ struct Transaction
 {
     qint64 id = 0;
     qint64 account_id = 0;
-    std::optional<qint64> counterparty_account_id = 0;
-    QString amount = "0.00"; //оказывается с++ не имеет типа decimal
+    std::optional<qint64> counterparty_account_id = std::nullopt;
+    QString amount = "0.00"; //в с++ нет decimal
     QString currency;
     QString type;
-    QString description;
-    QString status = QStringLiteral("pending");
-    QJsonObject metadata;
-    QDateTime created_at;
+    std::optional<QString> description = std::nullopt;
+    std::optional<QString> status = QStringLiteral("pending");
+    std::optional<QJsonObject> metadata = std::nullopt;
+    std::optional<QDateTime> created_at = std::nullopt;
 };
 
 }
 
 #endif // TRANSACTION_H
-
 
 /*
 neobank=# \d+ transactions

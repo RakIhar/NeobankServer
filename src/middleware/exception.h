@@ -15,7 +15,6 @@ public:
             try
             {
                 qDebug() << "[Exception] enter";
-                //логика, вызов сервисов
                 next(ctx);
                 qDebug() << "[Authorization] exit";
             }
