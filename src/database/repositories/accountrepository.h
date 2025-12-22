@@ -22,8 +22,11 @@ public:
     std::optional<Models::Account> getById(qint64 id) const;
     std::optional<Models::Account> getByIban(const QString &iban) const;
     QList<Models::Account> getByUser(qint64 userId) const;
+    QList<Models::Account> getByUser(qint64 userId, int limit, int page) const;
     bool updateBalance(qint64 id, QString newBalance);
     bool updateStatus(qint64 id, const QString &status);
+    std::pair<bool, QString> deleteById(qint64 id);
+    int getCountForUser(qint64 user_id) const;
 private:
     QSqlDatabase m_db;
     static Models::Account mapAccount(const QSqlQuery &query);

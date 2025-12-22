@@ -20,7 +20,8 @@ public:
         { qDebug() << "ctor TransactionRepository"; };
     std::optional<Models::Transaction> addTransaction(const Models::Transaction &t);
     QList<Models::Transaction> getByAccount(qint64 accountId) const;
-    QList<Models::Transaction> getRecentForUser(qint64 userId, int limit = 20) const;
+    QList<Models::Transaction> getRecentForUser(qint64 userId, int limit = 20, int page = 0) const;
+    int getCountForUser(qint64 userId) const;
 
 private:
     QSqlDatabase m_db;

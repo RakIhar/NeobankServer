@@ -1,41 +1,29 @@
 #ifndef ENDPOINTINVOKER_H
 #define ENDPOINTINVOKER_H
-
 #include <QObject>
 #include "imiddleware.h"
+#include "../endpoint/iendpoint.h"
 
-namespace Middlewares{
-
+namespace Middlewares
+{
 class EndpointInvoker : public IMiddleware
 {
 public:
-    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
-        if (!ctx.isAborted)
-        {
-            try
-            {
-                qDebug() << "[EndpointInvoker] enter";
-                if (ctx.currentEndpoint != nullptr)
-                {
-                    ctx.currentEndpoint->invoke(ctx);
-                }
-                else
-                {
-                    qDebug() << "[EndpointInvoker] no route";
-                }
+    QString name() const override { return "EndpointInvoker"; }
 
-                next(ctx);
-                qDebug() << "[EndpointInvoker] exit";
-            }
-            catch (...)
-            {
-                qDebug() << "[EndpointInvoker] abort";
-                ctx.abort();
-            }
+    void privateInvoke(MessageContext& ctx, const RequestDelegate& next) override
+    {
+        if (ctx.currentEndpoint != nullptr)
+        {
+            ctx.currentEndpoint->invoke(ctx);
         }
+        else
+        {
+            qDebug() << QString("[%1] no route").arg(name());
+        }
+        next(ctx);
     }
 };
-
 }
 
 #endif // ENDPOINTINVOKER_H

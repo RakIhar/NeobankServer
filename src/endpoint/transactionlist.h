@@ -1,19 +1,18 @@
 #ifndef ENDPOINT_TRANSACTIONLIST_H
 #define ENDPOINT_TRANSACTIONLIST_H
-
 #include "iendpoint.h"
 #include <QJsonArray>
-#include "../context/messagecontext.h"
-#include "../common/constants.h"
 #include "../common/serializers.h"
-#include "../database/models/transaction.h"
+#include "../database/repositories/transactionrepository.h"
 
-namespace Endpoints {
-
+namespace Endpoints
+{
 class TransactionList : public IEndpoint
 {
-    void createTrListSuccessResponce(QJsonObject& responce, const QList<Models::Transaction> transactions)
+    void successResponce(QJsonObject& responce, const QList<Models::Transaction> transactions,
+                         const int limit, const int page, const int total)
     {
+        successResponceTemplate(responce);
         QJsonArray arr;
         for (const auto &tx : transactions)
         {
@@ -21,24 +20,30 @@ class TransactionList : public IEndpoint
             serialize(obj, tx);
             arr.append(obj);
         }
-        using namespace Common;
-        responce[toStr(JsonField::Type)] = toStr(ProtocolType::TrList);
-        responce[toStr(JsonField::Result)] = true;
         responce[toStr(JsonField::TrArr)]  = arr;
+        responce[toStr(JsonField::Limit)] = limit;
+        responce[toStr(JsonField::Page)]  = page;
+        responce[toStr(JsonField::Count)] = total;
     }
 
-    void CreateTrListErrorResponce(QJsonObject& responce, QString reason)
+    bool init(MessageContext& ctx) override
     {
-        using namespace Common;
-        responce[toStr(JsonField::Type)]   = toStr(ProtocolType::TrList);
-        responce[toStr(JsonField::Result)] = false;
-        responce[toStr(JsonField::Reason)] = reason;
-    }
-public:
-    TransactionList() = default;
-    void invoke(MessageContext& ctx) override;
-};
+        if (txRepo != nullptr)
+            return true;
 
+        txRepo = static_cast<Database::TransactionRepository*>(
+            ctx.services.getRaw(typeid(Database::TransactionRepository).hash_code()));
+
+        if (txRepo != nullptr)
+            return true;
+        return false;
+    }
+    Database::TransactionRepository* txRepo = nullptr;
+public:
+    ProtocolType prType() const override { return ProtocolType::TrList; };
+    QString name() const override { return "TransactionList"; }
+    void privateInvoke(MessageContext& ctx) override;
+};
 }
 
 #endif // ENDPOINT_TRANSACTIONLIST_H

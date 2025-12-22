@@ -1,38 +1,41 @@
 #ifndef ENDPOINT_LOGIN_H
 #define ENDPOINT_LOGIN_H
-
 #include "iendpoint.h"
-#include <QDebug>
-#include "../context/messagecontext.h"
 #include "../common/constants.h"
+#include "../service/authentification.h"
+#include "../service/session.h"
 
-namespace Endpoints {
-
+namespace Endpoints
+{
 class Login : public IEndpoint
-{   
-    void createLoginSuccessResponce(QJsonObject& responce, QUuid sessionId, QString token)
+{
+    void successResponce(QJsonObject& responce, QUuid sessionId, QString token)
     {
-        using namespace Common;
-        responce[toStr(JsonField::Type)]      = toStr(ProtocolType::Login);
+        successResponceTemplate(responce);
         responce[toStr(JsonField::SessionId)] = sessionId.toString(QUuid::WithoutBraces);
         responce[toStr(JsonField::Token)]     = token;
-        responce[toStr(JsonField::Result)]    = true;
     }
 
-    void createLoginErrorResponce(QJsonObject& responce)
+    bool init(MessageContext& ctx) override
     {
-        using namespace Common;
-        responce[toStr(JsonField::Type)]   = toStr(ProtocolType::Login);
-        responce[toStr(JsonField::Result)] = false;
-        responce[toStr(JsonField::Reason)] = "Invalid username or password";
-    }
+        if (authService != nullptr && sessionService != nullptr)
+            return true;
 
+        authService = static_cast<Services::Authentification*>(
+            ctx.services.getRaw(typeid(Services::Authentification).hash_code()));
+        sessionService = static_cast<Services::Session*>(
+            ctx.services.getRaw(typeid(Services::Session).hash_code()));
+
+        return authService != nullptr && sessionService != nullptr;
+    };
+
+    Services::Authentification* authService = nullptr;
+    Services::Session* sessionService = nullptr;
 public:
-    Login(){};
-
-    void invoke(MessageContext& ctx) override;;
+    ProtocolType prType() const override { return ProtocolType::Login; };
+    QString name() const override { return "Login"; }
+    void privateInvoke(MessageContext& ctx) override;
 };
-
 }
 
 #endif // LOGIN_H

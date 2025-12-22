@@ -1,15 +1,60 @@
 #ifndef IENDPOINT_H
 #define IENDPOINT_H
-#include <QString>
-#include <QHash>
+#include "../context/messagecontext.h"
+#include "../common/constants.h"
 
-class MessageContext;
+using namespace Common;
+class IEndpoint
+{
+protected:
+    virtual void privateInvoke(MessageContext& ctx) = 0;
 
-class IEndpoint {
+    virtual void errorResponceTemplate(QJsonObject& responce, QString reason)
+    {
+        responce[toStr(JsonField::Type)]   = toStr(prType());
+        responce[toStr(JsonField::Result)] = false;
+        responce[toStr(JsonField::Error)] = reason;
+    };
+
+    virtual void successResponceTemplate(QJsonObject& responce)
+    {
+        responce[toStr(JsonField::Type)]   = toStr(prType());
+        responce[toStr(JsonField::Result)] = true;
+    };
+
+    virtual bool init(MessageContext& ctx){ return true; };
+
 public:
     virtual ~IEndpoint() = default;
 
-    virtual void invoke(MessageContext& ctx){};
+    virtual QString name() const = 0;
+
+    virtual Common::ProtocolType prType() const = 0;
+
+    void invoke(MessageContext& ctx)
+    {
+        if (!ctx.isAborted)
+        {
+            try
+            {
+                qDebug() << QString("[%1 endpoint] enter").arg(name());
+                if (init(ctx))
+                    privateInvoke(ctx);
+                else
+                {
+                    errorResponceTemplate(ctx.jsonResponce, "[%1 endpoint] init error");
+                    qDebug() << QString("[%1 endpoint] init error").arg(name());
+                }
+
+                qDebug() << QString("[%1 endpoint] exit").arg(name());
+            }
+            catch (...)
+            {
+                qDebug() << QString("[%1 endpoint] abort").arg(name());
+                ctx.abort();
+            }
+        }
+    };
 };
 
 class EndpointRegistry

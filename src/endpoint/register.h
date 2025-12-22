@@ -1,36 +1,38 @@
 #ifndef ENDPOINT_REGISTER_H
 #define ENDPOINT_REGISTER_H
-
 #include "iendpoint.h"
-#include <QDebug>
-#include <QJsonObject>
-#include "../context/messagecontext.h"
 #include "../common/constants.h"
+#include "../service/authentification.h"
 
-namespace Endpoints {
-
+namespace Endpoints
+{
 class Register : public IEndpoint
 {
-    void createRegisterSuccessResponce(QJsonObject& responce)
+    void successResponce(QJsonObject& responce)
     {
         using namespace Common;
         responce[toStr(JsonField::Type)]   = toStr(ProtocolType::Register);
         responce[toStr(JsonField::Result)] = true;
     }
 
-    void createRegisterErrorResponce(QJsonObject& responce, const QString& reason)
+    bool init(MessageContext& ctx) override
     {
-        using namespace Common;
-        responce[toStr(JsonField::Type)]   = toStr(ProtocolType::Register);
-        responce[toStr(JsonField::Result)] = false;
-        responce[toStr(JsonField::Reason)] = reason;
-    }
+        if (authService != nullptr )
+            return true;
+
+        authService = static_cast<Services::Authentification*>(
+            ctx.services.getRaw(typeid(Services::Authentification).hash_code()));
+
+        return authService != nullptr;
+    };
+
+    Services::Authentification* authService = nullptr;
+
 public:
-    Register(){};
-
-    void invoke(MessageContext& ctx) override;
+    ProtocolType prType() const override { return ProtocolType::Register; };
+    QString name() const override { return "Register"; }
+    void privateInvoke(MessageContext& ctx) override;
 };
-
 }
 
 #endif // REGISTER_H

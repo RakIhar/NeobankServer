@@ -12,11 +12,16 @@ struct Transaction
     qint64 id = 0;
     qint64 account_id = 0;
     std::optional<qint64> counterparty_account_id = std::nullopt;
-    QString amount = "0.00"; //в с++ нет decimal
-    QString currency;
+    QString amount = "0.00";//amount_from
+    QString currency;       //currency_from
+    //amount_to
+    //currency_to
+    //валюты можно удалить или сделать null
+    //можно добавить курс обмена
+    //можно добавить комиссию
     QString type;
-    std::optional<QString> description = std::nullopt;
-    std::optional<QString> status = QStringLiteral("pending");
+    std::optional<QString> description  = std::nullopt;
+    std::optional<QString> status       = QStringLiteral("pending");
     std::optional<QJsonObject> metadata = std::nullopt;
     std::optional<QDateTime> created_at = std::nullopt;
 };

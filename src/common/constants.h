@@ -2,6 +2,8 @@
 #define CONSTANTS_H
 #include <QAbstractSocket>
 #include <QMetaEnum>
+#include <qdatetime.h>
+#include "../database/models/account.h"
 
 class Enums : public QObject
 {
@@ -34,58 +36,113 @@ public:
         default:            return "";
         }
     }
-    static QString toStr(Currency currency)
+
+    static inline QString toStr(Currency currency)
     {
         const int value = static_cast<int>(currency);
         const char* key = QMetaEnum::fromType<Currency>().valueToKey(value);
         return key ? QString::fromLatin1(key) : QString();
     }
-    static Currency fromStr(const QString &str, Currency defaultValue) {//для перегрузки
+
+    static inline std::pair<Currency, bool> fromStr(const QString &str, Currency defaultValue = Currency::BYN ) {
         bool isCorrect;
         int value = QMetaEnum::fromType<Currency>().keyToValue(str.toUpper().toLatin1().data(), &isCorrect);
-        return isCorrect ? static_cast<Currency>(value) : defaultValue;
+        return std::make_pair(isCorrect ? static_cast<Currency>(value) : defaultValue, isCorrect);
     }
+};
+
+Q_DECLARE_METATYPE(Enums::Currency)
+
+struct ExchangeData
+{
+    Enums::Currency from;
+    Enums::Currency to;
+    double exchangeRate;
+    QString exchangeRateStr;
+    QDateTime dt;//not utc??
+};
+
+struct BeforeTransferInfo
+{
+    QString comission = "";
+    QString exchangeRate = "";
+    QString resultAmount = "";
+    std::optional<Models::Account> to_acc = std::nullopt;
+    bool isAllowed;
+    QString error;
 };
 
 namespace Common  {
 
-enum class Role
+// enum class Role
+// {
+//     None        = 0,  // без прав
+//     Client      = 1,  // пользователь банка
+//     Employee    = 2,  // рядовой сотрудник
+//     Manager     = 3,  // руководитель отдела
+//     Auditor     = 4,  // только просмотр
+//     Compliance  = 5,  // AML, KYC, инциденты
+//     Support     = 6,  // операции по запросу клиента
+//     Security    = 7,  // мониторинг событий, блокировки
+//     Admin       = 8,  // административный доступ
+//     System      = 9   // системные процессы, сервисные аккаунты
+// };
+
+// enum class AuthMethod
+// {
+//     None                     = 0,
+//     LoginPasswordSms         = 1,
+//     LoginPasswordEmail       = 2,
+//     // LoginPasswordScratchCard = 3,
+//     // LoginPasswordToken       = 4, // Google Authentificator, RSA SecurID
+//     // Certificate              = 5,
+//     // Biometrics               = 6,
+//     // AccessKey                = 7,
+//     // Token                    = 8,
+// };
+
+// enum class Permission
+// {
+//     None        = 0,
+//     ReadOnly    = 1 << 0,
+//     NoTransfer  = 1 << 1,
+//     NoWithdraw  = 1 << 2,
+//     Frozen      = 1 << 3,
+//     Blocked     = 1 << 4,
+//     Closed      = 1 << 5
+// };
+
+enum class AccStatus
 {
-    None        = 0,  // без прав
-    Client      = 1,  // пользователь банка
-    Employee    = 2,  // рядовой сотрудник
-    Manager     = 3,  // руководитель отдела
-    Auditor     = 4,  // только просмотр
-    Compliance  = 5,  // AML, KYC, инциденты
-    Support     = 6,  // операции по запросу клиента
-    Security    = 7,  // мониторинг событий, блокировки
-    Admin       = 8,  // административный доступ
-    System      = 9   // системные процессы, сервисные аккаунты
+    Active,
+    Frozen,
+    Deleted,
+    System
 };
 
-enum class AuthMethod
-{  
-    None                     = 0,
-    LoginPasswordSms         = 1,
-    LoginPasswordEmail       = 2,
-    // LoginPasswordScratchCard = 3,
-    // LoginPasswordToken       = 4, // Google Authentificator, RSA SecurID
-    // Certificate              = 5,
-    // Biometrics               = 6,
-    // AccessKey                = 7,
-    // Token                    = 8,
-};
-
-enum class Permission
+inline QString toStr(AccStatus st)
 {
-    None        = 0,
-    ReadOnly    = 1 << 0,
-    NoTransfer  = 1 << 1,
-    NoWithdraw  = 1 << 2,
-    Frozen      = 1 << 3,
-    Blocked     = 1 << 4,
-    Closed      = 1 << 5
-};
+    switch(st)
+    {
+    case AccStatus::Active:  return "active";
+    case AccStatus::Frozen:  return "frozen";
+    case AccStatus::Deleted: return "deleted";
+    case AccStatus::System:  return "system";
+    }
+    return {};
+}
+
+inline AccStatus fromStr(const QString& statusStr, AccStatus defaultValue = AccStatus::Deleted)
+{
+    static const QMap<QString, AccStatus> stringToEnum = {
+        {"active",  AccStatus::Active},
+        {"frozen",  AccStatus::Frozen},
+        {"deleted", AccStatus::Deleted},
+        {"system",  AccStatus::System}
+    };
+
+    return stringToEnum.value(statusStr.toLower(), defaultValue);
+}
 
 enum class ProtocolType
 {
@@ -95,7 +152,12 @@ enum class ProtocolType
     AccList,
     TrList,
     AccCreate,
-    TrCreate
+    AccDelete,
+    TrCreate,
+    TrBefore,
+    CreditCreate,
+    Undefined,
+    ExchangeRate
 };
 
 inline QString toStr(ProtocolType type)
@@ -107,7 +169,12 @@ inline QString toStr(ProtocolType type)
     case ProtocolType::AccList:       return "account.list";
     case ProtocolType::TrList:        return "transaction.list";
     case ProtocolType::AccCreate:     return "account.create";
+    case ProtocolType::AccDelete:     return "account.delete";
     case ProtocolType::TrCreate:      return "transaction.create";
+    case ProtocolType::TrBefore:      return "transaction.before";
+    case ProtocolType::CreditCreate:  return "credit.create";
+    case ProtocolType::Undefined:     return "undef";
+    case ProtocolType::ExchangeRate:  return "exchange_rate";
     }
     return {};
 }
@@ -125,12 +192,10 @@ enum class JsonField
     CounterpartyId,
     FromAcc,
     ToAcc,
-
     Username,
     Password,
     PasswordHash,
     Email,
-
     TransactionId,
     Amount,
     Type,
@@ -139,18 +204,22 @@ enum class JsonField
     SessionId,
     Token,
     Result,
-    Reason,
+    Error,
+    Descr,
     ReasonCode,
     Phone,
     Metadata,
-
     AccObj,
     AccArr,
     TrObj,
     TrArr,
-
+    Obj, //плохое поле
     Limit,
-    Page
+    Page,
+    Comission,
+    ExchangeRate,
+    Count,
+    ResAmount
 };
 
 inline QString toStr(JsonField field)
@@ -167,13 +236,14 @@ inline QString toStr(JsonField field)
     case JsonField::Currency:       return "currency";
     case JsonField::TransactionId:  return "transaction_id";
     case JsonField::Amount:         return "amount";
+    case JsonField::ResAmount:      return "res_amount";
     case JsonField::Type:           return "type";
     case JsonField::Subtype:        return "subtype";
     case JsonField::Timestamp:      return "timestamp";
     case JsonField::SessionId:      return "session_id";
     case JsonField::Token:          return "token";
     case JsonField::Result:         return "result";
-    case JsonField::Reason:         return "reason";
+    case JsonField::Error:          return "error";
     case JsonField::ReasonCode:     return "reason_code";
     case JsonField::Phone:          return "phone";
     case JsonField::Iban:           return "iban";
@@ -190,6 +260,11 @@ inline QString toStr(JsonField field)
     case JsonField::FromAcc:        return "from";
     case JsonField::ToAcc:          return "to";
     case JsonField::Metadata:       return "metadata";
+    case JsonField::Obj:            return "obj";
+    case JsonField::Comission:      return "comission";
+    case JsonField::ExchangeRate:   return "exchane_rate";
+    case JsonField::Descr:          return "description";
+    case JsonField::Count:          return "count";
     }
     return {};
 }

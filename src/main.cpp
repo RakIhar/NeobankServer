@@ -22,32 +22,23 @@
 
 #include "service/session.h"
 #include "service/authentification.h"
+#include "service/currencyexchange.h"
+#include "service/comission.h"
+#include "service/transactionservice.h"
 
 #include "endpoint/login.h"
 #include "endpoint/register.h"
 #include "endpoint/accountlist.h"
 #include "endpoint/accountcreate.h"
+#include "endpoint/accountdelete.h"
 #include "endpoint/transactionlist.h"
 #include "endpoint/transactioncreate.h"
+#include "endpoint/transactionbefore.h"
+#include "endpoint/creditcreate.h"
+#include "endpoint/exchange.h"
 
 int main(int argc, char *argv[])
 {
-    //TODO
-    //Первостепенно:
-    //Улучшить transferDialog
-    //limit в list'ах
-    //Добавить переводы валют
-    //Исправить nullable в SQL
-    //Маппинг в репозиториях
-
-    //Второстепенно:
-    //Улучшить транспортный уровень: user_agent и ip_address, безопасность
-    //разграничить auth_session и logic_session
-    //Сделать многопоточность
-    //Улучшить авторизацию и проверку ролей в ней
-    //Небольшой рефакторинг кода в клиенте
-    //добавить initRepos
-
     QCoreApplication a(argc, argv);
     a.setApplicationName("NeobankServer");
     a.setOrganizationName("R.I.Inc.");
@@ -67,6 +58,11 @@ int main(int argc, char *argv[])
     using namespace Services;
     app.useService<Session,          AuthSessionRepository>(ServiceType::Singleton);
     app.useService<Authentification, AuthSessionRepository, UserRepository>(ServiceType::Singleton);
+    app.useService<CurrencyExchange>(ServiceType::Transient);
+    app.useService<Comission>(ServiceType::Singleton);
+    app.useService<TransactionService, Comission, CurrencyExchange,
+                   Database::UserRepository, Database::TransactionRepository,
+                   Database::AccountRepository>(ServiceType::Singleton);
     }
     {
     using namespace Middlewares;
@@ -81,12 +77,18 @@ int main(int argc, char *argv[])
     {
     using namespace Endpoints;
     using namespace Common;
-    app.useEndpoint(toStr(ProtocolType::Login),     std::make_unique<Login>());
-    app.useEndpoint(toStr(ProtocolType::Register),  std::make_unique<Register>());
-    app.useEndpoint(toStr(ProtocolType::AccList),   std::make_unique<AccountList>());
-    app.useEndpoint(toStr(ProtocolType::TrList),    std::make_unique<TransactionList>());
-    app.useEndpoint(toStr(ProtocolType::AccCreate), std::make_unique<AccountCreate>());
-    app.useEndpoint(toStr(ProtocolType::TrCreate),  std::make_unique<TransactionCreate>());
+    app.useEndpoint(toStr(ProtocolType::Login),        std::make_unique<Login>());
+    app.useEndpoint(toStr(ProtocolType::Register),     std::make_unique<Register>());
+
+    app.useEndpoint(toStr(ProtocolType::TrList),       std::make_unique<TransactionList>());
+    app.useEndpoint(toStr(ProtocolType::TrCreate),     std::make_unique<TransactionCreate>());
+    app.useEndpoint(toStr(ProtocolType::CreditCreate), std::make_unique<CreditCreate>());
+    app.useEndpoint(toStr(ProtocolType::TrBefore),     std::make_unique<TransactionBefore>());
+    app.useEndpoint(toStr(ProtocolType::ExchangeRate), std::make_unique<ExchangeRates>());
+
+    app.useEndpoint(toStr(ProtocolType::AccDelete),    std::make_unique<AccountDelete>());
+    app.useEndpoint(toStr(ProtocolType::AccCreate),    std::make_unique<AccountCreate>());
+    app.useEndpoint(toStr(ProtocolType::AccList),      std::make_unique<AccountList>());
     }
     RequestDelegate terminal = [](MessageContext& ctx) {
         qDebug() << "Hello, world!";

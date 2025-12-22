@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QSslKey>
 #include <QSslCipher>
+#include <qjsondocument.h>
 
 TransportLayer::TransportLayer(QObject *parent)
     : QObject(parent)
@@ -11,8 +12,15 @@ TransportLayer::TransportLayer(QObject *parent)
     connect(m_sessionManager, &ConnectionManager::closed, this, [this](const QUuid &connection){
         emit closed(connection);
     });
-    connect(m_sessionManager, &ConnectionManager::messageReceived, this, [this](const QUuid &connection, const QByteArray &rawData){
-        qDebug() << "Получено: " << rawData;
+    connect(m_sessionManager, &ConnectionManager::messageReceived, this, [this](const QUuid &connection, const QByteArray &rawData){       
+        QJsonDocument doc = QJsonDocument::fromJson(rawData);
+        if (!doc.isObject()) return;
+
+        if (!doc.isNull()) {
+            qDebug().noquote() << "Received JSON:\n" << doc.toJson(QJsonDocument::Indented);
+        } else
+            qDebug() << "Received:\n" << rawData;
+
         emit messageReceived(connection, rawData);
     });
 
@@ -84,7 +92,14 @@ void TransportLayer::close(const QUuid connection)
 
 void TransportLayer::sendMessage(const QUuid connection, const QByteArray rawData)
 {
-    qDebug() << "Отправлено: " << rawData;
+    QJsonDocument doc = QJsonDocument::fromJson(rawData);
+    if (!doc.isObject()) return;
+
+    if (!doc.isNull()) {
+        qDebug().noquote() << "Sent JSON:\n" << doc.toJson(QJsonDocument::Indented);
+    } else
+        qDebug() << "Sent:\n" << rawData;
+
     m_sessionManager->sendMessage(connection, rawData);
 }
 

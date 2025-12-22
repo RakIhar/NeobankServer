@@ -1,6 +1,8 @@
 #include "authorization.h"
-
-namespace Middlewares {
+#include "../common/constants.h"
+using namespace Common;
+namespace Middlewares
+{
 
 const QStringList Authorization::publicEndpoints = {
     "login",
@@ -34,7 +36,7 @@ bool Authorization::isAuthorized(MessageContext &ctx)
             qDebug() << "[Authorization] Authentication required but session not available";
             ctx.jsonResponce[toStr(JsonField::Type)] = toStr(ProtocolType::Authorization);
             ctx.jsonResponce[toStr(JsonField::Result)] = false;
-            ctx.jsonResponce[toStr(JsonField::Reason)] = "Authentication required";
+            ctx.jsonResponce[toStr(JsonField::Error)] = "Authentication required";
             ctx.jsonResponce[toStr(JsonField::ReasonCode)] = "UNAUTHORIZED";
 
             return false;
@@ -45,7 +47,7 @@ bool Authorization::isAuthorized(MessageContext &ctx)
             qDebug() << "[Authorization] User not found in context";
             ctx.jsonResponce[toStr(JsonField::Type)] = toStr(ProtocolType::Authorization);
             ctx.jsonResponce[toStr(JsonField::Result)] = false;
-            ctx.jsonResponce[toStr(JsonField::Reason)] = "User not found";
+            ctx.jsonResponce[toStr(JsonField::Error)] = "User not found";
             ctx.jsonResponce[toStr(JsonField::ReasonCode)] = "UNAUTHORIZED";
             return false;
         }

@@ -1,11 +1,10 @@
 #ifndef AUTHORIZATION_H
 #define AUTHORIZATION_H
-
 #include "imiddleware.h"
 #include <QStringList>
-#include "../common/constants.h"
-namespace Middlewares{
 
+namespace Middlewares
+{
 class Authorization : public IMiddleware
 {
 private:
@@ -18,29 +17,16 @@ private:
     bool isAuthorized(MessageContext& ctx);
 
 public:
-    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
-        if (!ctx.isAborted)
-        {
-            try
-            {
-                qDebug() << "[Authorization] enter";
+    QString name() const override { return "Authorization"; }
 
-                if(isAuthorized(ctx))
-                    next(ctx);
-                else
-                    ctx.abort();
-
-                qDebug() << "[Authorization] exit";
-            }
-            catch (...)
-            {
-                qDebug() << "[Authorization] abort";
-                ctx.abort();
-            }
-        }
+    void privateInvoke(MessageContext& ctx, const RequestDelegate& next) override
+    {
+        if(isAuthorized(ctx))
+            next(ctx);
+        else
+            ctx.abort();
     }
 };
-
 }
 
 #endif // AUTHORIZATION_H

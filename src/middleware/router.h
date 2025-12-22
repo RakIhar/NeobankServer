@@ -1,39 +1,24 @@
 #ifndef ROUTER_H
 #define ROUTER_H
-
 #include "imiddleware.h"
 #include "../common/constants.h"
+#include "../endpoint/iendpoint.h"
 
-namespace Middlewares{
-
+namespace Middlewares
+{
 class Router : public IMiddleware
 {
 public:
-    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
-        if (!ctx.isAborted)
-        {
-            try
-            {
-                using namespace Common;
-                qDebug() << "[Router] enter";
+    QString name() const override { return "Router"; }
 
-                QString route = ctx.jsonRequest[toStr(JsonField::Type)].toString();
-
-                ctx.currentEndpoint = ctx.endpoints.getEndpoint(route);
-
-                next(ctx);
-
-                qDebug() << "[Router] exit";
-            }
-            catch (...)
-            {
-                qDebug() << "[Router] abort";
-                ctx.abort();
-            }
-        }
+    void privateInvoke(MessageContext& ctx, const RequestDelegate& next) override
+    {
+        using namespace Common;
+        QString route = ctx.jsonRequest[toStr(JsonField::Type)].toString();
+        ctx.currentEndpoint = ctx.endpoints.getEndpoint(route);
+        next(ctx);
     }
 };
-
 }
 
 #endif // ROUTER_H

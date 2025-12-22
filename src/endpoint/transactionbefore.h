@@ -1,20 +1,19 @@
-#ifndef TRANSACTIONCREATE_H
-#define TRANSACTIONCREATE_H
+#ifndef TRANSACTIONBEFORE_H
+#define TRANSACTIONBEFORE_H
 #include "iendpoint.h"
 #include "../common/serializers.h"
 #include "../service/transactionservice.h"
 
-namespace Endpoints {
-
-class TransactionCreate : public IEndpoint {
-    void handleTransaction(MessageContext &ctx);
-
-    void successResponce(QJsonObject& responce, Models::Transaction tr)
+namespace Endpoints
+{
+class TransactionBefore : public IEndpoint
+{
+    void responce(QJsonObject& responce, BeforeTransferInfo info) //нестандартный протокол
     {
-        successResponceTemplate(responce);
         QJsonObject obj;
-        serialize(obj, tr);
-        responce[toStr(JsonField::TrObj)] = obj;
+        serialize(obj, info);
+        responce[toStr(JsonField::Type)]     = toStr(ProtocolType::TrBefore);
+        responce[toStr(JsonField::TrObj)]    = obj;
     }
 
     bool init(MessageContext &ctx) override
@@ -30,12 +29,12 @@ class TransactionCreate : public IEndpoint {
         return false;
     }
     Services::TransactionService* svc = nullptr;
+
 public:
-    ProtocolType prType() const override { return ProtocolType::TrCreate; };
-    QString name() const override { return "TransactionCreate"; }
+    ProtocolType prType() const override { return ProtocolType::TrBefore; };
+    QString name() const override { return "TransactionBefore"; }
     void privateInvoke(MessageContext &ctx) override;
 };
-
 }
 
-#endif // TRANSACTIONCREATE_H
+#endif // TRANSACTIONBEFORE_H

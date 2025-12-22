@@ -1,32 +1,18 @@
 #ifndef LOGGER_H
 #define LOGGER_H
-
 #include "imiddleware.h"
-#include "../service/iservice.h"
 
-namespace Middlewares{
-
+namespace Middlewares
+{
 class Logger : public IMiddleware
 {
 public:
-    void invoke(MessageContext& ctx, const RequestDelegate& next) override {
-        if (!ctx.isAborted)
-        {
-            try
-            {
-                qDebug() << "[Logger] enter";
-                next(ctx);
-                qDebug() << "[Logger] exit";
-            }
-            catch (...)
-            {
-                qDebug() << "[Logger] abort";
-                ctx.abort();
-            }
-        }
+    QString name() const override { return "Logger"; }
+    void privateInvoke(MessageContext& ctx, const RequestDelegate& next) override
+    {
+        next(ctx);
     }
 };
-
 }
 
 #endif // LOGGER_H

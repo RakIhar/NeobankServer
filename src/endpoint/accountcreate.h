@@ -1,35 +1,36 @@
 #ifndef ACCOUNTCREATE_H
 #define ACCOUNTCREATE_H
-
 #include "iendpoint.h"
-#include "../context/messagecontext.h"
-#include "../database/models/account.h"
-#include "../common/constants.h"
 #include "../common/serializers.h"
-namespace Endpoints {
+#include "../database/repositories/accountrepository.h"
 
-class AccountCreate : public IEndpoint {
-    void createAccCreateSuccessResponce(QJsonObject& responce, Models::Account acc)
+namespace Endpoints
+{
+class AccountCreate : public IEndpoint
+{
+    void successResponce(QJsonObject& responce, Models::Account acc)
     {
-        using namespace Common;
+        successResponceTemplate(responce);
         QJsonObject accObj;
         serialize(accObj, acc);
-        responce[toStr(JsonField::Type)]    = toStr(ProtocolType::AccCreate);
-        responce[toStr(JsonField::Result)]  = true;
         responce[toStr(JsonField::AccObj)]  = accObj;
     }
 
-    void createAccCreateErrorResponce(QJsonObject& responce, QString reason)
+    bool init(MessageContext& ctx) override
     {
-        using namespace Common;
-        responce[toStr(JsonField::Type)]   = toStr(ProtocolType::AccCreate);
-        responce[toStr(JsonField::Result)] = false;
-        responce[toStr(JsonField::Reason)] = reason;
-    }
-public:
-    void invoke(MessageContext &ctx) override;
-};
+        if (repo != nullptr)
+            return true;
+        repo = static_cast<Database::AccountRepository*>(
+            ctx.services.getRaw(typeid(Database::AccountRepository).hash_code()));
+        return repo != nullptr;
+    };
 
+    Database::AccountRepository* repo = nullptr;
+public:
+    ProtocolType prType() const override { return ProtocolType::AccCreate; };
+    QString name() const override { return "AccountCreate"; }
+    void privateInvoke(MessageContext &ctx) override;
+};
 }
 
 #endif // ACCOUNTCREATE_H

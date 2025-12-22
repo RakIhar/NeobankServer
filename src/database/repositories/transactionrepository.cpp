@@ -74,7 +74,7 @@ QList<Models::Transaction> TransactionRepository::getByAccount(qint64 account_id
     return list;
 }
 
-QList<Models::Transaction> TransactionRepository::getRecentForUser(qint64 user_id, int limit) const
+QList<Models::Transaction> TransactionRepository::getRecentForUser(qint64 user_id, int limit, int page) const
 {
     QList<Models::Transaction> list;
     QSqlQuery q(m_db);
@@ -84,13 +84,24 @@ QList<Models::Transaction> TransactionRepository::getRecentForUser(qint64 user_i
               "JOIN accounts a ON a.id = t.account_id "
               "WHERE a.user_id = :user_id "
               "ORDER BY t.created_at DESC "
-              "LIMIT :limit");
+              "LIMIT :limit OFFSET :offset");
     q.bindValue(":user_id", user_id);
     q.bindValue(":limit", limit);
+    q.bindValue(":offset", page * limit);
     if (q.exec())
         while (q.next())
             list.append(mapTransaction(q));
     return list;
+}
+
+int TransactionRepository::getCountForUser(qint64 user_id) const
+{
+    QSqlQuery q(m_db);
+    q.prepare("SELECT COUNT(1) as cnt FROM transactions t JOIN accounts a ON a.id = t.account_id WHERE a.user_id = :user_id");
+    q.bindValue(":user_id", user_id);
+    if (!q.exec()) return 0;
+    if (q.next()) return q.value("cnt").toInt();
+    return 0;
 }
 
 Models::Transaction TransactionRepository::mapTransaction(const QSqlQuery &query)

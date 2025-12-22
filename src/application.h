@@ -4,6 +4,7 @@
 #include <QObject>
 #include "network/transportlayer.h"
 #include "pipeline/pipelinebuilder.h"
+#include "endpoint/iendpoint.h"
 
 /*
 Модель владения:

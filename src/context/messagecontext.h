@@ -4,8 +4,9 @@
 #include "usercontext.h"
 #include "sessioncontext.h"
 #include "../service/iservice.h"
-#include "../endpoint/iendpoint.h"
 #include "connectioncontext.h"
+class EndpointRegistry;
+class IEndpoint;
 
 class MessageContext
 {

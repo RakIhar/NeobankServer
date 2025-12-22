@@ -1,21 +1,19 @@
 #ifndef ENDPOINT_ACCOUNTLIST_H
 #define ENDPOINT_ACCOUNTLIST_H
-
 #include "iendpoint.h"
 #include <QJsonArray>
-#include "../context/messagecontext.h"
 #include "../common/constants.h"
 #include "../common/serializers.h"
-#include "../database/models/account.h"
+#include "../database/repositories/accountrepository.h"
 
-namespace Endpoints {
-
+namespace Endpoints
+{
 class AccountList : public IEndpoint
 {
-    void createAccListSuccessResponce(QJsonObject& responce, const QList<Models::Account> accounts)
+    void successResponce(QJsonObject& responce, const QList<Models::Account> accounts,
+                         const int limit, const int page, const int total)
     {
-        using namespace Common;
-
+        successResponceTemplate(responce);
         QJsonArray arr;
         for (const auto &acc : accounts)
         {
@@ -23,23 +21,27 @@ class AccountList : public IEndpoint
             serialize(obj, acc);
             arr.append(obj);
         }
-        responce[toStr(JsonField::Type)] = toStr(ProtocolType::AccList);
-        responce[toStr(JsonField::Result)] = true;
         responce[toStr(JsonField::AccArr)] = arr;
+        responce[toStr(JsonField::Limit)] = limit;
+        responce[toStr(JsonField::Page)]  = page;
+        responce[toStr(JsonField::Count)] = total;
     }
 
-    void CreateAccListErrorResponce(QJsonObject& responce, QString reason)
+    bool init(MessageContext& ctx) override
     {
-        using namespace Common;
-        responce[toStr(JsonField::Type)]   = toStr(ProtocolType::AccList);
-        responce[toStr(JsonField::Result)] = false;
-        responce[toStr(JsonField::Reason)] = reason;
-    }
-public:
-    AccountList() = default;
-    void invoke(MessageContext& ctx) override;
-};
+        if (repo != nullptr)
+            return true;
+        repo = static_cast<Database::AccountRepository*>(
+            ctx.services.getRaw(typeid(Database::AccountRepository).hash_code()));
+        return repo != nullptr;
+    };
 
+    Database::AccountRepository* repo;
+public:
+    ProtocolType prType() const override { return ProtocolType::AccList; };
+    QString name() const override { return "AccountList"; }
+    void privateInvoke(MessageContext& ctx) override;
+};
 }
 
 #endif // ENDPOINT_ACCOUNTLIST_H

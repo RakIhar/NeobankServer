@@ -1,37 +1,10 @@
 #include "transactionlist.h"
-#include <algorithm>
-#include "../database/repositories/transactionrepository.h"
-using namespace Endpoints;
-using namespace Common;
 
-void TransactionList::invoke(MessageContext &ctx)
+void Endpoints::TransactionList::privateInvoke(MessageContext &ctx)
 {
-    if (!ctx.isAborted)
-    try
-    {
-        qDebug() << "[TransactionList endpoint] enter";
-
-        auto *repo = static_cast<Database::TransactionRepository*>(
-            ctx.services.getRaw(typeid(Database::TransactionRepository).hash_code()));
-
-        if (repo)
-        {
-            if (ctx.session.isAvailable && ctx.user.user_id)
-            {
-                const int limit = std::clamp(ctx.jsonRequest.value(toStr(JsonField::Limit)).toInt(50), 1, 200);
-                createTrListSuccessResponce(ctx.jsonResponce, repo->getRecentForUser(ctx.user.user_id, limit));
-            }
-            else
-                CreateTrListErrorResponce(ctx.jsonResponce, QStringLiteral("Unauthorized"));
-        }
-        else
-            CreateTrListErrorResponce(ctx.jsonResponce, QStringLiteral("TransactionRepository unavailable"));
-
-        qDebug() << "[TransactionList endpoint] exit";
-    }
-    catch (...)
-    {
-        qDebug() << "[TransactionList endpoint] abort";
-        ctx.abort();
-    }
+    const int limit = std::clamp(ctx.jsonRequest.value(toStr(JsonField::Limit)).toInt(50), 1, 200);
+    const int page = std::max(0, ctx.jsonRequest.value(toStr(JsonField::Page)).toInt(0));
+    QList<Models::Transaction> txs = txRepo->getRecentForUser(ctx.user.user_id, limit, page);
+    int total = txRepo->getCountForUser(ctx.user.user_id);
+    successResponce(ctx.jsonResponce, txs, limit, page, total);
 }

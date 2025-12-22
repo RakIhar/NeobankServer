@@ -101,7 +101,15 @@ set(SOURCES
 add_executable(NeobankServer ${SOURCES}
   src/context/connectioncontext.h
   src/common/converters.h
-  src/common/serializers.h)
+  src/common/serializers.h
+  src/endpoint/accountdelete.h src/endpoint/accountdelete.cpp
+  src/endpoint/creditcreate.h src/endpoint/creditcreate.cpp
+  src/endpoint/transactionbefore.h src/endpoint/transactionbefore.cpp
+  src/endpoint/exchange.h src/endpoint/exchange.cpp
+  src/service/currencyexchange.h src/service/currencyexchange.cpp
+  src/service/comission.h src/service/comission.cpp
+  src/service/transactionservice.h src/service/transactionservice.cpp
+  src/service/accountservice.h src/service/accountservice.cpp)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 
