@@ -1,9 +1,7 @@
 #include "exchange.h"
-#include "../common/converters.h"
-
+//TODO: check
 void Endpoints::ExchangeRates::privateInvoke(MessageContext &ctx)
 {
-    //проверки валют
     const QJsonObject req   = ctx.jsonRequest;
     const QString fromS     = req.value("from").toString().trimmed();
     const QString toS       = req.value("to").toString().trimmed();
@@ -22,7 +20,7 @@ void Endpoints::ExchangeRates::privateInvoke(MessageContext &ctx)
     QJsonObject obj;
     obj["from"] = Enums::toStr(ex.from);
     obj["to"] = Enums::toStr(ex.to);
-    obj["rate"] = ex.exchangeRate;
+    obj["rate"] = ex.exchangeRate.value_or(-1);
     obj[toStr(JsonField::ExchangeRate)] = ex.exchangeRateStr;
     ctx.jsonResponce[toStr(JsonField::Obj)] = obj;
 }

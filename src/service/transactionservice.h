@@ -48,7 +48,7 @@ public:
                                                    const QString &toBal,
                                                    const QString &trasfer,
                                                    QString &errorOut);
-    std::pair<qint64, bool> checkExchangeRateAccessibility(const QString &fromCurrency,
+    std::optional<double>  checkExchangeRateAccessibility(const QString &fromCurrency,
                                                            const QString &toCurrency,
                                                            QString &errorOut);
 };

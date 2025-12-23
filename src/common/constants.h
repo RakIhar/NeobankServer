@@ -57,7 +57,7 @@ struct ExchangeData
 {
     Enums::Currency from;
     Enums::Currency to;
-    double exchangeRate;
+    std::optional<double> exchangeRate;
     QString exchangeRateStr;
     QDateTime dt;//not utc??
 };

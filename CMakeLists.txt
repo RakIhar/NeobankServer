@@ -109,7 +109,8 @@ add_executable(NeobankServer ${SOURCES}
   src/service/currencyexchange.h src/service/currencyexchange.cpp
   src/service/comission.h src/service/comission.cpp
   src/service/transactionservice.h src/service/transactionservice.cpp
-  src/service/accountservice.h src/service/accountservice.cpp)
+  src/service/accountservice.h src/service/accountservice.cpp
+  src/service/loggerservice.h src/service/loggerservice.cpp)
 #add_library
 #include_directories("" "" "") - для поиска хедеров
 
