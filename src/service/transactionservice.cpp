@@ -2,146 +2,132 @@
 #include "../common/converters.h"
 #include <cmath>
 
-namespace Services {
+namespace Services
+{
+
+using namespace std;
+
+optional<TransactionService::TransferValidationResult> TransactionService::validateAndCalculate(const QVariant &fromVar, const QVariant &toVar, const QString &amount, QString &errorOut)
+{
+    optional<TransactionService::TransferValidationResult> res = nullopt;
+
+    auto accs = checkFromToAccessibility(fromVar, toVar, errorOut);
+    if (accs.has_value())
+    {
+        auto money = checkMoneyAccessibility(accs->first.balance.value_or(""), accs->second.balance.value_or(""), amount, errorOut);
+        if (money.has_value())
+        {
+            auto rateOpt = checkExchangeRateAccessibility(accs->first.currency, accs->second.currency, errorOut);
+            if (rateOpt.has_value())
+            {
+                qint64 comm = m_com->computeCommissionCents(money->transfer);
+                qint64 afterComm = std::max(0LL, money->transfer - comm);
+                qint64 credit = static_cast<qint64>(std::llround(afterComm * *rateOpt));
+
+                res = {
+                    .fromAcc = accs->first,
+                    .toAcc = accs->second,
+                    .transferCents = money->transfer,
+                    .commissionCents = comm,
+                    .creditCents = credit,
+                    .rate = rateOpt.value(),
+                    .fromBal = money->fromBal,
+                    .toBal = money->toBal
+                };
+            }
+        }
+    }
+    return res;
+}
 
 BeforeTransferInfo TransactionService::getBeforeTransferInfo(const QString &toVar, const QString &amount, const QString &fromVar)
 {
     QString errorOut;
+    auto res = validateAndCalculate(fromVar, toVar, amount, errorOut);
 
-    auto accsAccessibility = checkFromToAccessibility(fromVar, toVar, errorOut);
-    if (!std::get<2>(accsAccessibility))
-        return {
-            .isAllowed = false,
-            .error = errorOut
-        }; //прикольно))
-        // return { "", "", "", std::nullopt, false, errorOut};
+    BeforeTransferInfo info;
+    info.isAllowed = res.has_value();
+    info.error = errorOut;
 
-    Models::Account fromAcc = std::get<0>(accsAccessibility);
-    Models::Account toAcc   = std::get<1>(accsAccessibility);
-
-    auto moneyAccessibility = checkMoneyAccessibility(fromAcc.balance.value_or(""), toAcc.balance.value_or(""), amount, errorOut);
-    if (!moneyAccessibility.second)
-        return {
-            .to_acc = toAcc,
-            .isAllowed = false,
-            .error = errorOut
-        };
-    qint64 fromBal  = moneyAccessibility.first.fromBal;
-    qint64 toBal    = moneyAccessibility.first.toBal;
-    qint64 transfer = moneyAccessibility.first.transfer;
-
-
-    qint64 commissionCents = m_com->computeCommissionCents(transfer);
-    qint64 transferAfterCommission = transfer - commissionCents;
-    if (transferAfterCommission < 0)
-        transferAfterCommission = 0;
-
-    std::optional<double> exchangeRateAccessibily = checkExchangeRateAccessibility(fromAcc.currency, toAcc.currency, errorOut);
-    if (!exchangeRateAccessibily.has_value())
-        return {
-            .comission = m_com->commissionPercentString() + " : " + Money::fromCents(commissionCents),
-            .to_acc = toAcc,
-            .isAllowed = false,
-            .error = errorOut
-        };
-    double rate = exchangeRateAccessibily.value();
-    qint64 creditCents = static_cast<qint64>(std::llround(transferAfterCommission * rate));
-
-    // qint64 newFrom = fromBal - transfer;
-    // qint64 newTo = toBal + creditCents;
-    return {
-        .comission = m_com->commissionPercentString() + " : " + Money::fromCents(commissionCents),
-        .exchangeRate = QString::number(rate),
-        .resultAmount = Money::fromCents(creditCents),
-        .to_acc = toAcc,
-        .isAllowed = true,
-        .error = errorOut
-    };
+    if (res.has_value())
+    {
+        info.to_acc = res->toAcc;
+        info.comission = m_com->commissionPercentString() + " : " + Money::fromCents(res->commissionCents);
+        info.exchangeRate = QString::number(res->rate);
+        info.resultAmount = Money::fromCents(res->creditCents);
+    }
+    else
+    {
+        auto accs = checkFromToAccessibility(fromVar, toVar, errorOut);
+        if (accs)
+            info.to_acc = accs->second;
+    }
+    return info;
 }
 
-std::optional<Models::Transaction> TransactionService::createTransfer(const QVariant &fromVar,
-                                                                     const QVariant &toVar,
-                                                                     const QString &amount,
-                                                                     const QString &description,
-                                                                     QString &errorOut)
+optional<Models::Transaction> TransactionService::createTransfer(const QVariant &fromVar,
+                                                                 const QVariant &toVar,
+                                                                 const QString &amount,
+                                                                 const QString &description,
+                                                                 QString &errorOut)
 {
+    optional<Models::Transaction> trRes = nullopt;
 
-    auto accsAccessibility = checkFromToAccessibility(fromVar, toVar, errorOut);
-    if (!std::get<2>(accsAccessibility))
-        return std::nullopt;
-    Models::Account fromAcc = std::get<0>(accsAccessibility);
-    Models::Account toAcc   = std::get<1>(accsAccessibility);
-
-    auto moneyAccessibility = checkMoneyAccessibility(fromAcc.balance.value_or(""), toAcc.balance.value_or(""), amount, errorOut);
-    if (!moneyAccessibility.second)
-        return std::nullopt;
-    qint64 fromBal  = moneyAccessibility.first.fromBal;
-    qint64 toBal    = moneyAccessibility.first.toBal;
-    qint64 transfer = moneyAccessibility.first.transfer;
-
-
-    qint64 commissionCents = m_com->computeCommissionCents(transfer);
-    qint64 transferAfterCommission = transfer - commissionCents;
-    if (transferAfterCommission < 0)
-        transferAfterCommission = 0;
-
-    auto exchangeRateAccessibily = checkExchangeRateAccessibility(fromAcc.currency, toAcc.currency, errorOut);
-    if (!exchangeRateAccessibily.has_value())
-        return std::nullopt;
-    double rate = exchangeRateAccessibily.value();
-    qint64 creditCents = static_cast<qint64>(std::llround(transferAfterCommission * rate));
-
-    qint64 newFrom = fromBal - transfer;
-    qint64 newTo = toBal + creditCents;
-
-    //до этого момента BeforeTransferInfo содержит +- идентичный код
-
-    if (!(m_accs->updateBalance(fromAcc.id, Money::fromCents(newFrom)) &&
-          m_accs->updateBalance(toAcc.id, Money::fromCents(newTo))))
+    //TODO: это тихий ужас, куча update без транзакций, безусловно исправить и код здесь, и код репы
+    auto res = validateAndCalculate(fromVar, toVar, amount, errorOut);
+    if (res.has_value())
     {
-        errorOut = "Failed to update balances";
-        return std::nullopt;
-    }
+        qint64 newFrom = res->fromBal - res->transferCents;
+        qint64 newTo = res->toBal + res->creditCents;
 
-    Models::Transaction tFrom;
-    tFrom.account_id                = fromAcc.id;
-    tFrom.counterparty_account_id   = toAcc.id;
-    tFrom.amount                    = Money::fromCents(transfer);
-    tFrom.currency                  = fromAcc.currency;
-    tFrom.type                      = QStringLiteral("debit");
-    tFrom.description               = description;
-    tFrom.status                    = QStringLiteral("done");
-    {
-        QJsonObject md;
-        md[toStr(Common::JsonField::Comission)]    = m_com->commissionPercentString();
-        md[toStr(Common::JsonField::ExchangeRate)] = rate;
-        tFrom.metadata = md;
-    }
+        if (!(m_accs->updateBalance(res->fromAcc.id, Money::fromCents(newFrom)) &&
+              m_accs->updateBalance(res->toAcc.id, Money::fromCents(newTo))))
+            errorOut = "Failed to update balances";
+        else
+        {
+            Models::Transaction tFrom;
+            tFrom.account_id                = res->fromAcc.id;
+            tFrom.counterparty_account_id   = res->toAcc.id;
+            tFrom.amount                    = Money::fromCents(res->transferCents);
+            tFrom.currency                  = res->fromAcc.currency;
+            tFrom.type                      = QStringLiteral("debit");
+            tFrom.description               = description;
+            tFrom.status                    = QStringLiteral("done");
+            {
+                QJsonObject md;
+                md[toStr(Common::JsonField::Comission)]    = m_com->commissionPercentString();
+                md[toStr(Common::JsonField::ExchangeRate)] = res->rate;
+                tFrom.metadata = md;
+            }
 
-    Models::Transaction tTo;
-    tTo.account_id                  = toAcc.id;
-    tTo.counterparty_account_id     = fromAcc.id;
-    tTo.amount                      = Money::fromCents(creditCents);
-    tTo.currency                    = toAcc.currency;
-    tTo.type                        = QStringLiteral("credit");
-    tTo.description                 = description;
-    tTo.status                      = QStringLiteral("done");
-    {
-        QJsonObject md;
-        md[toStr(Common::JsonField::Comission)]    = m_com->commissionPercentString();
-        md[toStr(Common::JsonField::ExchangeRate)] = rate;
-        tTo.metadata = md;
-    }
+            Models::Transaction tTo;
+            tTo.account_id                  = res->toAcc.id;
+            tTo.counterparty_account_id     = res->fromAcc.id;
+            tTo.amount                      = Money::fromCents(res->creditCents);
+            tTo.currency                    = res->toAcc.currency;
+            tTo.type                        = QStringLiteral("credit");
+            tTo.description                 = description;
+            tTo.status                      = QStringLiteral("done");
+            {
+                QJsonObject md;
+                md[toStr(Common::JsonField::Comission)]    = m_com->commissionPercentString();
+                md[toStr(Common::JsonField::ExchangeRate)] = res->rate;
+                tTo.metadata = md;
+            }
 
-    const std::optional<Models::Transaction> cFrom = m_txs->addTransaction(tFrom);
-    const std::optional<Models::Transaction> cTo   = m_txs->addTransaction(tTo);
-    if (cFrom.has_value() && cTo.has_value())
-        return cTo;
-    errorOut = "Failed to create transactions";
-    return std::nullopt;
+            const std::optional<Models::Transaction> cFrom = m_txs->addTransaction(tFrom);
+            const std::optional<Models::Transaction> cTo   = m_txs->addTransaction(tTo);
+
+            if (cFrom.has_value() && cTo.has_value())
+                trRes = cTo;
+            else
+                errorOut = "Failed to create transactions";
+        }
+    }
+    return trRes;
 }
 
-std::tuple<Models::Account, Models::Account, bool> TransactionService::checkFromToAccessibility(const QVariant &fromVar, const QVariant &toVar, QString &errorOut)
+optional<pair<Models::Account, Models::Account>> TransactionService::checkFromToAccessibility(const QVariant &fromVar, const QVariant &toVar, QString &errorOut)
 {
     qint64 fromId    = fromVar.toLongLong();
     qint64 toId      = toVar.toLongLong();
@@ -149,56 +135,46 @@ std::tuple<Models::Account, Models::Account, bool> TransactionService::checkFrom
     QString toIban   = toVar.toString();
     Models::Account fromAcc;
     Models::Account toAcc;
+    optional<pair<Models::Account, Models::Account>> res = nullopt;
 
-    std::optional<Models::Account> fromAccOpt = m_accs->getById(fromId);
-    if (!fromAccOpt.has_value()) {
-        fromAccOpt = m_accs->getByIban(fromIban);
-        if (!fromAccOpt.has_value())
-        {
-            errorOut = "Incorrect from account";
-            return std::make_tuple(fromAcc, toAcc, false);
-        }
-    }
-    std::optional<Models::Account> toAccOpt = m_accs->getById(toId);
-    if (!toAccOpt.has_value()) {
-        toAccOpt = m_accs->getByIban(toIban);
-        if (!toAccOpt.has_value())
-        {
-            errorOut = "Incorrect to account";
-            return std::make_tuple(fromAcc, toAcc, false);
-        }
-    }
-
-    fromAcc = fromAccOpt.value();
-    toAcc = toAccOpt.value();
-
-    if (fromAcc.id == toAcc.id)
+    auto getAcc = [&](const qint64 id, const QString& iban) -> std::optional<Models::Account>
     {
-        errorOut = "Same account";
-        return std::make_tuple(fromAcc, toAcc, false);
-    }
-
-    auto isBadStatus = [](const Models::Account &a)
-    {
-        const QString st = a.status.value_or("active");
-        return (st == "frozen" || st == "deleted" || st == "system" || st == "blocked" || st == "closed");
+        std::optional<Models::Account> resAcc = m_accs->getById(id);
+        if (!resAcc.has_value()) {
+            resAcc = m_accs->getByIban(iban);
+            if (!resAcc.has_value())
+                errorOut = "Incorrect from account";
+        }
+        return resAcc;
     };
-    if (isBadStatus(fromAcc))
+
+    std::optional<Models::Account> fromAccOpt = getAcc(fromId, fromIban);
+    std::optional<Models::Account> toAccOpt   = getAcc(toId, toIban);
+
+    if      (!fromAccOpt.has_value())
+        errorOut = "Incorrect from account";
+    else if (!toAccOpt.has_value())
+        errorOut = "Incorrect to account";
+    else
     {
-        errorOut = "From account is not available";
-        return std::make_tuple(fromAcc, toAcc, false);
+        fromAcc = fromAccOpt.value();
+        toAcc = toAccOpt.value();
+
+        if (fromAcc.id == toAcc.id)
+            errorOut = "Same account";
+        else if (Common::fromStr(fromAcc.status.value_or("")) != Common::AccStatus::Active)
+            errorOut = "From account is not available";
+        else if (Common::fromStr(toAcc.status.value_or(""))   != Common::AccStatus::Active)
+            errorOut = "To account is not available";
+        else
+            res = make_pair(fromAcc, toAcc);
     }
-    if (isBadStatus(toAcc))
-    {
-        errorOut = "To account is not available";
-        return std::make_tuple(fromAcc, toAcc, false);
-    }
-    return std::make_tuple(fromAcc, toAcc, true);
+    return res;
 }
 
-std::optional<double> TransactionService::checkExchangeRateAccessibility(const QString &fromCurrency, const QString &toCurrency, QString &errorOut)
+optional<double> TransactionService::checkExchangeRateAccessibility(const QString &fromCurrency, const QString &toCurrency, QString &errorOut)
 {
-    std::optional<double> rate = std::nullopt;
+    optional<double> rate = nullopt;
     auto fromCurOpt = Enums::fromStr(fromCurrency, Enums::Currency::BYN);
     auto toCurOpt   = Enums::fromStr(toCurrency, Enums::Currency::BYN);
     if (fromCurOpt.second && toCurOpt.second)
@@ -220,39 +196,28 @@ std::optional<double> TransactionService::checkExchangeRateAccessibility(const Q
     return rate;
 }
 
-std::pair<TransactionService::Cents, bool> TransactionService::checkMoneyAccessibility(const QString &fromBalStr, const QString &toBalStr, const QString &trasferStr, QString &errorOut)
+optional<TransactionService::Cents> TransactionService::checkMoneyAccessibility(const QString &fromBalStr, const QString &toBalStr, const QString &trasferStr, QString &errorOut)
 {
-    std::pair<qint64, bool> fromBal  = Money::toCents(fromBalStr, false);
-    std::pair<qint64, bool> transfer = Money::toCents(trasferStr, false);
-    std::pair<qint64, bool> toBal    = Money::toCents(toBalStr, false);
+    pair<qint64, bool> fromBal  = Money::toCents(fromBalStr, false);
+    pair<qint64, bool> transfer = Money::toCents(trasferStr, false);
+    pair<qint64, bool> toBal    = Money::toCents(toBalStr, false);
     Cents cents {fromBal.first, toBal.first, transfer.first };
+    optional<Cents> res = nullopt;
+
     if (!fromBal.first || !fromBal.second)
-    {
         errorOut = "From balance is empty or incorrect";
-        return std::make_pair(cents, false);
-    }
-
-    if (!toBal.second)
-    {
+    else if (!toBal.second)
         errorOut = "To balance is incorrect";
-        return std::make_pair(cents, false);
-    }
-
-    if (!transfer.first || !transfer.second)
-    {
+    else if (!transfer.first || !transfer.second)
         errorOut = "Transfer sum is empty or incorrect";
-        return std::make_pair(cents, false);
-    }
-
-    if (transfer.first <= 0 || fromBal.first < transfer.first)
-    {
+    else if (transfer.first <= 0 || fromBal.first < transfer.first)
         errorOut = "Insufficient funds or invalid amount";
-        return std::make_pair(cents, false);
-    }
-    return std::make_pair(cents, true);
+    else
+        res = cents;
+    return res;
 }
 
-} // namespace Services
+}
 #include "transactionservice.h"
 
 

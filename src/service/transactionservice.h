@@ -8,7 +8,9 @@
 #include "../database/repositories/userrepository.h"
 #include "../database/repositories/accountrepository.h"
 
-namespace Services {
+namespace Services
+{
+using namespace std;
 
 class TransactionService : public IService
 {
@@ -17,6 +19,18 @@ class TransactionService : public IService
     Database::UserRepository* m_users;
     Database::TransactionRepository* m_txs;
     Database::AccountRepository* m_accs;
+
+    struct TransferValidationResult {
+        Models::Account fromAcc;
+        Models::Account toAcc;
+        qint64 transferCents;
+        qint64 commissionCents;
+        qint64 creditCents;
+        double rate;
+        qint64 fromBal;
+        qint64 toBal;
+    };
+    optional<TransferValidationResult>validateAndCalculate(const QVariant &fromVar, const QVariant &toVar, const QString &amount, QString &errorOut);
 public:
     struct Cents
     {
@@ -34,21 +48,21 @@ public:
 
     BeforeTransferInfo getBeforeTransferInfo(const QString& to, const QString &amount, const QString &from);
 
-    std::optional<Models::Transaction> createTransfer(const QVariant &fromVar,
+    optional<Models::Transaction> createTransfer(const QVariant &fromVar,
                                                       const QVariant &toVar,
                                                       const QString &amount,
                                                       const QString &description,
                                                       QString &errorOut);
-    std::tuple<Models::Account, Models::Account, bool> checkFromToAccessibility(
+    optional<pair<Models::Account, Models::Account>> checkFromToAccessibility(
                                                      const QVariant &fromVar,
                                                      const QVariant &toVar,
                                                      QString &errorOut);
 
-    std::pair<Cents, bool> checkMoneyAccessibility(const QString &fromBal,
+    optional<Cents> checkMoneyAccessibility(const QString &fromBal,
                                                    const QString &toBal,
                                                    const QString &trasfer,
                                                    QString &errorOut);
-    std::optional<double>  checkExchangeRateAccessibility(const QString &fromCurrency,
+    optional<double>  checkExchangeRateAccessibility(const QString &fromCurrency,
                                                            const QString &toCurrency,
                                                            QString &errorOut);
 };
